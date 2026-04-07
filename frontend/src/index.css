@@ -1,0 +1,8 @@
+@theme {
+  --color-safira: #1E40AF;
+}
+
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

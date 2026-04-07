@@ -1,0 +1,1 @@
+export type StatusChamado = 'EM_ANDAMENTO' | 'PENDENTE' | 'CONCLUIDO' | 'CANCELADO';
