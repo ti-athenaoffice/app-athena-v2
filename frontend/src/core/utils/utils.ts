@@ -82,6 +82,11 @@ export function throttle<T extends (...args: any[]) => any>(
   };
 }
 
+export function obterIconPerfil(nome: string): string
+{
+  return nome.charAt(0).toUpperCase() ?? "";
+}
+
 /**
  * Copia texto para a área de transferência
  * @param text - Texto a ser copiado

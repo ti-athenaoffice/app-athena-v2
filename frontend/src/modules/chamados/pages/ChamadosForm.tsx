@@ -1,49 +1,82 @@
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Input from "../../../core/components/input";
 import Select from "../../../core/components/select";
 import Button from "../../../core/components/button";
 import { Save, AlertCircle, ArrowLeft } from "lucide-react";
 import QuillEditor from "../../../core/components/quillEditor";
 import AutoSelect from "../../../core/components/autoSelect";
-import { getSetoresOptions, getPrioridadesOptions } from "../../../core/utils/selectOptions";
-import { criarChamado } from "../service/chamadoService";
-
-const chamadoSchema = z.object({
-  titulo: z.string().min(5, "O título deve ter pelo menos 5 caracteres"),
-  setor_solicitado: z.string().min(1, "Selecione o setor de destino"),
-  prioridade: z.string().min(1, "Defina a prioridade"),
-  descricao: z.string().min(10, "Descreva o problema com mais detalhes"),
-  nome_funcionario_requisitado: z.string().optional(),
-});
-
-type ChamadoFormData = z.infer<typeof chamadoSchema>;
+import {
+  getSetoresOptions,
+  getPrioridadesOptions,
+} from "../../../core/utils/selectOptions";
+import { criarChamado, editarChamado } from "../service/chamadoService";
+import toast from "react-hot-toast";
+import { defaultValuesChamado, type Chamado } from "../types/Chamado";
+import { listarUsuarios } from "../../auth/service/usuarioService";
+import type { Usuario } from "../../auth/types/Usuario";
 
 export default function ChamadosForm() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const [usuarios, setUsuarios] = useState<any[]>([]);
+
   const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<ChamadoFormData>({
-    resolver: zodResolver(chamadoSchema),
-    defaultValues: {
-      prioridade: "MEDIA",
-      descricao: "",
-    },
+  } = useForm<Chamado>({
+    defaultValues: defaultValuesChamado,
   });
 
-  const onSubmit = async (data: ChamadoFormData) => {
-    await criarChamado(data);
-    navigate("/chamados");
+  useEffect(() => {
+    if (id && location.state?.chamado) {
+      const data = location.state.chamado;
+      reset({
+        id: data.id,
+        titulo: data.titulo,
+        setor_solicitado: data.setor_solicitado,
+        prioridade: data.prioridade,
+        descricao: data.descricao || "",
+        nome_funcionario_requisitado: data.nome_funcionario_requisitado,
+      });
+    }
+  }, [id, reset, location.state]);
+
+  const onSubmit = async (data: Chamado) => {
+    try {
+      if (id) {
+        await editarChamado(id, data);
+        toast.success("Chamado atualizado com sucesso!");
+      } else {
+        await criarChamado(data);
+        toast.success("Chamado aberto com sucesso!");
+      }
+      navigate("/chamados");
+    } catch (error) {
+      toast.error("Erro ao salvar o chamado");
+    }
   };
+
+  useEffect(() => {
+    const buscarUsuarios = async () => {
+      const res = await listarUsuarios();
+      const data = res.data.map((u: Usuario) => ({
+        value: u.nome,
+        label: u.nome,
+      }));
+      setUsuarios(data);
+    };
+    buscarUsuarios();
+  }, []);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
         <Button
           variant="text"
           onClick={() => navigate("/chamados")}
@@ -67,37 +100,60 @@ export default function ChamadosForm() {
             </div>
 
             <div>
-              <Select
-                label="Setor Solicitado *"
-                options={getSetoresOptions()}
-                {...register("setor_solicitado")}
-                error={!!errors.setor_solicitado}
-                helperText={errors.setor_solicitado?.message}
+              <Controller
+                name="setor_solicitado"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="Setor Solicitado *"
+                    options={getSetoresOptions()}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    error={!!errors.setor_solicitado}
+                    helperText={errors.setor_solicitado?.message}
+                  />
+                )}
               />
             </div>
 
             <div>
-              <Select
-                label="Prioridade *"
-                options={getPrioridadesOptions()}
-                {...register("prioridade")}
-                error={!!errors.prioridade}
-                helperText={errors.prioridade?.message}
+              <Controller
+                name="prioridade"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="Prioridade *"
+                    options={getPrioridadesOptions()}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={!!errors.prioridade}
+                    helperText={errors.prioridade?.message}
+                  />
+                )}
               />
             </div>
 
             <div className="md:col-span-2">
-              <AutoSelect
-                label="Nome funcionário Requisitado"
-                options={[
-                  { value: "Guilherme", label: "Guilherme" },
-                  { value: "Gustavo", label: "Gustavo" },
-                  { value: "Breno", label: "Breno" },
-                  { value: "Gabriel", label: "Gabriel" },
-                ]}
-                {...register("nome_funcionario_requisitado")}
-                error={!!errors.nome_funcionario_requisitado}
-                helperText={errors.nome_funcionario_requisitado?.message}
+              <Controller
+                name="nome_funcionario_requisitado"
+                control={control}
+                render={({ field }) => {
+                  const selectedOption =
+                    usuarios.find((opt) => opt.value === field.value) ?? null;
+
+                  return (
+                    <AutoSelect
+                      label="Nome funcionário Requisitado"
+                      options={usuarios}
+                      value={selectedOption}
+                      onChange={(_, option) =>
+                        field.onChange(option?.value ?? null)
+                      }
+                      error={!!errors.nome_funcionario_requisitado}
+                      helperText={errors.nome_funcionario_requisitado?.message}
+                    />
+                  );
+                }}
               />
             </div>
 
@@ -138,7 +194,7 @@ export default function ChamadosForm() {
                 isLoading={isSubmitting}
                 startIcon={<Save size={18} />}
               >
-                Abrir Chamado
+                {id ? "Salvar Alterações" : "Abrir Chamado"}
               </Button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import ChamadosPage from "./modules/chamados/pages/ChamadosPage";
 import ChamadosForm from "./modules/chamados/pages/ChamadosForm";
 import DashboardPage from "./modules/dashboard/pages/DashboardPage";
 import LoginPage from "./modules/auth/pages/LoginPage";
+import PerfilPage from "./modules/auth/pages/PerfilPage";
 
 export const router = createBrowserRouter([
   {
@@ -36,8 +37,16 @@ export const router = createBrowserRouter([
         element: <ChamadosForm />,
       },
       {
+        path: "chamados/editar/:id",
+        element: <ChamadosForm />,
+      },
+      {
         path: "admin",
         element: <div className="text-2xl font-bold">Admin (Em breve)</div>,
+      },
+      {
+        path: "configuracoes",
+        element: <PerfilPage />,
       },
     ],
   },

@@ -1,13 +1,8 @@
-import { User, Building2, ArrowRight, UserCheck } from "lucide-react";
+import { User, Building2, ArrowRight, UserCheck, UserCogIcon, } from "lucide-react";
+import type { Chamado } from "../types/Chamado";
 
 interface ChamadoTechnicalInfoProps {
-  chamado: {
-    nome_funcionario?: string;
-    setor_solicitante: string;
-    setor_solicitado: string;
-    nome_funcionario_responsavel?: string;
-    prioridade?: string;
-  };
+  chamado: Chamado;
 }
 
 function SectionTitle({ title }: { title: string }) {
@@ -36,6 +31,7 @@ export default function ChamadoTechnicalInfo({ chamado }: ChamadoTechnicalInfoPr
       <TechnicalInfoItem icon={User} label="Solicitante" value={chamado.nome_funcionario || 'Não informado'} />
       <TechnicalInfoItem icon={Building2} label="Setor Origem" value={chamado.setor_solicitante} />
       <TechnicalInfoItem icon={ArrowRight} label="Setor Destino" value={chamado.setor_solicitado} />
+      <TechnicalInfoItem icon={UserCogIcon} label="Funcionário Solicitado" value={chamado.nome_funcionario_requisitado || 'Sem atribuição'} />
       <TechnicalInfoItem icon={UserCheck} label="Responsável" value={chamado.nome_funcionario_responsavel || 'Aguardando Atribuição'} />
     </div>
   );

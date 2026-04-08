@@ -6,8 +6,9 @@ import ChamadosFilters from "../components/ChamadosFilters";
 import ChamadosKanban from "../components/ChamadosKanban";
 import ChamadosDetalhes from "./ChamadosDetalhes";
 import { chamadosColumns } from "../components/ChamadosColumns";
-import { useChamados } from "../hooks";
+import { useChamados } from "../hooks/useChamados";
 import Button from "../../../core/components/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ChamadosPage() {
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -15,11 +16,12 @@ export default function ChamadosPage() {
   const [selectedChamado, setSelectedChamado] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { chamados, loading, error, refetch } = useChamados();
+  const { data: chamados, isLoading, error } = useChamados();
+  const queryClient = useQueryClient();
 
   const filteredChamados = useMemo(
     () =>
-      chamados.filter(
+      chamados?.data?.filter(
         (item) =>
           item.id.toString().includes(search.toLowerCase()) ||
           item.titulo.toLowerCase().includes(search.toLowerCase()),
@@ -37,6 +39,10 @@ export default function ChamadosPage() {
     setSelectedChamado(null);
   };
 
+  const handleRefetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["chamados"] });
+  };
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -44,8 +50,10 @@ export default function ChamadosPage() {
           <p className="text-red-600 font-medium mb-2">
             Erro ao carregar chamados
           </p>
-          <p className="text-slate-600 text-sm my-5">{error}</p>
-          <Button onClick={refetch} variant="contained">
+          <p className="text-slate-600 text-sm my-5">
+            {error instanceof Error ? error.message : "Erro desconhecido"}
+          </p>
+          <Button onClick={handleRefetch} variant="contained">
             Tentar novamente
           </Button>
         </div>
@@ -63,7 +71,7 @@ export default function ChamadosPage() {
           columns={chamadosColumns}
           data={filteredChamados}
           onRowClick={handleRowClick}
-          isLoading={loading}
+          isLoading={isLoading}
           emptyMessage="Nenhum chamado encontrado."
         />
       ) : (

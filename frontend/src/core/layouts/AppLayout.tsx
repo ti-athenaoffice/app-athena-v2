@@ -17,7 +17,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Ticket, label: "Chamados", path: "/chamados" },
   { icon: Users, label: "Administração", path: "/admin" },
-  { icon: Settings, label: "Configurações", path: "/config" },
+  { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
 const getPageTitle = (pathname: string): string => {

@@ -4,7 +4,7 @@ interface ChamadoDescriptionProps {
   descricao?: string;
 }
 
-export default function ChamadoDescription({
+export default function ChamadoDescricao({
   descricao,
 }: ChamadoDescriptionProps) {
   return (
@@ -16,7 +16,10 @@ export default function ChamadoDescription({
         </h2>
       </div>
       <div
-        className="prose prose-sm text-slate-700"
+        className="prose prose-sm max-w-none text-slate-700 
+                   prose-ul:list-disc prose-ul:pl-5 
+                   prose-ol:list-decimal prose-ol:pl-5
+                   prose-headings:text-slate-900 prose-headings:font-bold"
         dangerouslySetInnerHTML={{ __html: descricao || "" }}
       />
     </section>

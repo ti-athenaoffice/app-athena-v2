@@ -1,8 +1,7 @@
 import api from "../../../core/service/api";
 import type { Page } from "../../../core/types/Page";
 import type {
-  Chamado,
-  EditarChamadoRequest,
+  Chamado
 } from "../types/Chamado";
 
 const ENDPOINT = "api/chamados";
@@ -26,7 +25,7 @@ export const criarChamado = async (payload: any) => {
 /**
  * Editar existente
  */
-export const editarChamado = async (id: string, payload: EditarChamadoRequest) => {
+export const editarChamado = async (id: string, payload: any) => {
   const { data } = await api.put<Chamado>(`${ENDPOINT}/${id}`, payload);
   return data;
 };

@@ -1,7 +1,10 @@
 import { CalendarDays, Edit2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "../../../core/components/button";
 import type { Chamado } from "../types/Chamado";
-import { useUpdateStatusChamado } from "../hooks";
+import { useUpdateStatusChamado } from "../hooks/useChamados";
+import { useState } from "react";
+import Confirmacao from "../../../core/components/confirmacao";
 
 interface ChamadoHeaderProps {
   chamado: Chamado;
@@ -13,7 +16,7 @@ function StatusBadge({ status }: { status: string }) {
     ABERTO: "bg-amber-100 text-amber-800 border-amber-200",
     EM_ATENDIMENTO: "bg-blue-100 text-blue-800 border-blue-200",
     CONCLUIDO: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    CANCELADO: "bg-red-100 text-red-800 border-red-200", // Adicionado caso precise
+    CANCELADO: "bg-red-100 text-red-800 border-red-200",
   };
 
   return (
@@ -25,16 +28,16 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default function ChamadoHeader({
-  chamado,
-  onClose,
-}: ChamadoHeaderProps) {
+export default function ChamadoHeader({ chamado }: ChamadoHeaderProps) {
+  const navigate = useNavigate();
+  const [confirmarFinalizacao, setConfirmarFinalizacao] = useState(false);
   const { updateStatus, loading } = useUpdateStatusChamado();
   const isFinalizado =
     chamado.status === "CONCLUIDO" || chamado.status === "CANCELADO";
 
   const onFinalizar = async () => {
     await updateStatus(chamado.id, "CONCLUIDO");
+      setConfirmarFinalizacao(false);
   };
 
   return (
@@ -51,15 +54,12 @@ export default function ChamadoHeader({
         </h1>
         <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
           <CalendarDays size={14} /> Aberto em{" "}
-          {new Date(chamado.created_at || chamado.data).toLocaleDateString(
-            "pt-BR",
-          )}{" "}
-          por {chamado.nome_funcionario || "Sistema"}
+          {new Date(chamado.created_at).toLocaleDateString("pt-BR")} por{" "}
+          {chamado.nome_funcionario || "Sistema"}
         </p>
       </div>
 
       <div className="flex items-center gap-3 shrink-0 pt-2">
-        {/* Renderização Condicional: Só exibe se NÃO estiver finalizado */}
         {!isFinalizado && (
           <>
             <Button
@@ -67,6 +67,11 @@ export default function ChamadoHeader({
               color="primary"
               size="small"
               startIcon={<Edit2 size={16} />}
+              onClick={() =>
+                navigate(`/chamados/editar/${chamado.id}`, {
+                  state: { chamado },
+                })
+              }
             >
               Editar
             </Button>
@@ -75,7 +80,7 @@ export default function ChamadoHeader({
               variant="contained"
               color="success"
               size="small"
-              onClick={onFinalizar}
+              onClick={() => setConfirmarFinalizacao(true)}
               isLoading={loading}
             >
               Finalizar
@@ -83,6 +88,12 @@ export default function ChamadoHeader({
           </>
         )}
       </div>
+      <Confirmacao
+        message="Deseja realmente finalizar este chamado? Esta ação não poderá ser desfeita."
+        onClose={() => setConfirmarFinalizacao(false)}
+        onConfirm={onFinalizar}
+        open={confirmarFinalizacao}
+      />
     </div>
   );
 }

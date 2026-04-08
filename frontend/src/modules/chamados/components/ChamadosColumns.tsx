@@ -6,7 +6,6 @@ import { formatShortDate, formatRelativeTime } from "../../../core/utils/dateUti
 export const chamadosColumns: Column<Chamado>[] = [
   {
     header: "Protocolo",
-    // O log mostrou que não vem 'protocolo', vem 'id'
     accessor: (item) => (
       <span className="font-bold text-blue-600">
         #{String(item.id).padStart(3, "0")}
