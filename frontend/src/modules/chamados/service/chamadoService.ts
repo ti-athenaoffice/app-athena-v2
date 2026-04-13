@@ -6,12 +6,29 @@ import type {
 
 const ENDPOINT = "api/chamados";
 
+export interface ChamadosFiltros {
+  protocolo?: string;
+  status?: string;
+  visualizar?: string;
+  prioridade?: string;
+}
+
 /**
  * Listar chamados (Suporta paginação do Laravel)
  */
-export const listarChamados = async (page = 1) => {
-  const { data } = await api.get<Page<Chamado>>(`${ENDPOINT}?page=${page}`);
-  return data; 
+export const listarChamados = async (
+  page = 1,
+  filtros: ChamadosFiltros = {},
+) => {
+  const params = {
+    page,
+    ...Object.fromEntries(
+      Object.entries(filtros).filter(([_, value]) => value !== "" && value != null),
+    ),
+  };
+
+  const { data } = await api.get<Page<Chamado>>(ENDPOINT, { params });
+  return data;
 };
 
 /**
@@ -35,6 +52,12 @@ export const editarChamado = async (id: string, payload: any) => {
  */
 export const alterarStatusChamado = async (id: string, payload: string) => {
   const { data } = await api.put<Chamado>(`${ENDPOINT}/${id}/status`, { status: payload });
+  return data;
+};
+
+
+export const adicionarPrazoNoChamado = async (id: string, payload: string) => {
+  const { data } = await api.put<Chamado>(`${ENDPOINT}/${id}/adicionar-prazo`, { prazo_estimado_finalizacao: payload });
   return data;
 };
 

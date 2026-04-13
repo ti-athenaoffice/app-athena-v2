@@ -1,6 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Input from "../../../core/components/input";
 import Select from "../../../core/components/select";
 import Button from "../../../core/components/button";
@@ -11,24 +11,26 @@ import {
   getSetoresOptions,
   getPrioridadesOptions,
 } from "../../../core/utils/selectOptions";
-import { criarChamado, editarChamado } from "../service/chamadoService";
 import toast from "react-hot-toast";
 import { defaultValuesChamado, type Chamado } from "../types/Chamado";
-import { listarUsuarios } from "../../auth/service/usuarioService";
-import type { Usuario } from "../../auth/types/Usuario";
+import { useCreateChamado, useUpdateChamado } from "../hooks/useChamados";
+import { useUsuarios } from "../../admin/hooks/useUsuario";
 
 export default function ChamadosForm() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const { mutateAsync: createChamado, isPending: createLoading } = useCreateChamado();
+  const { mutateAsync: editarChamado, isPending: updateLoading  } = useUpdateChamado();
+  const { data, isFetching } = useUsuarios();
+  const usuarios = data ? data?.data?.map((u) => ({ value: u.nome, label: u.nome })) : [];
 
   const {
     register,
     handleSubmit,
     control,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<Chamado>({
     defaultValues: defaultValuesChamado,
   });
@@ -50,10 +52,10 @@ export default function ChamadosForm() {
   const onSubmit = async (data: Chamado) => {
     try {
       if (id) {
-        await editarChamado(id, data);
+        await editarChamado({ id, data });
         toast.success("Chamado atualizado com sucesso!");
       } else {
-        await criarChamado(data);
+        await createChamado(data);
         toast.success("Chamado aberto com sucesso!");
       }
       navigate("/chamados");
@@ -62,23 +64,12 @@ export default function ChamadosForm() {
     }
   };
 
-  useEffect(() => {
-    const buscarUsuarios = async () => {
-      const res = await listarUsuarios();
-      const data = res.data.map((u: Usuario) => ({
-        value: u.nome,
-        label: u.nome,
-      }));
-      setUsuarios(data);
-    };
-    buscarUsuarios();
-  }, []);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <Button
-          variant="text"
+          type="button"
+          variant="outlined"
           onClick={() => navigate("/chamados")}
           startIcon={<ArrowLeft size={20} />}
         >
@@ -146,6 +137,8 @@ export default function ChamadosForm() {
                       label="Nome funcionário Requisitado"
                       options={usuarios}
                       value={selectedOption}
+                      disabled={isFetching}
+                      loading={isFetching}
                       onChange={(_, option) =>
                         field.onChange(option?.value ?? null)
                       }
@@ -191,7 +184,7 @@ export default function ChamadosForm() {
               <Button
                 type="submit"
                 variant="contained"
-                isLoading={isSubmitting}
+                isLoading={createLoading || updateLoading}
                 startIcon={<Save size={18} />}
               >
                 {id ? "Salvar Alterações" : "Abrir Chamado"}

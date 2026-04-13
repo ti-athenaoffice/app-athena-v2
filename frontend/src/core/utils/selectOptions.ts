@@ -36,6 +36,18 @@ const STATUS_LABELS: Record<StatusChamado, string> = {
   CANCELADO: "Cancelado",
 };
 
+const VISUALIZAR_CHAMADOS: Record<string, string> = {
+  PARA_MEU_SETOR: "Para meu Setor",
+  DO_MEU_SETOR: "Do meu Setor"
+} 
+
+export function getVisualizarOptions(): SelectOption[] {
+  return (Object.keys(VISUALIZAR_CHAMADOS) as Setores[]).map((setor) => ({
+    value: setor,
+    label: VISUALIZAR_CHAMADOS[setor],
+  }));
+}
+
 // Função para obter opções de setores
 export function getSetoresOptions(): SelectOption[] {
   return (Object.keys(SETORES_LABELS) as Setores[]).map((setor) => ({

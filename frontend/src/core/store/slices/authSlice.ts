@@ -5,29 +5,23 @@ import { processarLogin, processarLogout } from "../../../modules/auth/service/a
 import api from "../../service/api";
 
 const initialState: AuthState = {
-  user: null,
-  token: null, // Não armazenamos token no localStorage quando usamos cookies
+  usuario: null,
+  token: null,
   isLoading: false,
   error: null,
-  isAuthenticated: false, // Começamos como não autenticado, será verificado no initializeAuth
+  isAuthenticated: false,
   isInitialized: false,
 };
 
-/**
- * Thunk para inicializar autenticação ao carregar a app
- * Verifica se o usuário está autenticado via cookies
- */
 export const initializeAuth = createAsyncThunk(
   "auth/initialize",
   async () => {
     try {
-      // Tenta fazer uma requisição para uma rota protegida para verificar se está autenticado
-      // Se estiver autenticado, o cookie será enviado automaticamente
       const response = await api.get('/api/user');
 
       if (response.status === 200) {
         return {
-          token: null, // Não armazenamos token quando usamos cookies
+          token: null,
           isAuthenticated: true,
           user: response.data
         };
@@ -35,7 +29,6 @@ export const initializeAuth = createAsyncThunk(
         return { token: null, isAuthenticated: false };
       }
     } catch (error: any) {
-      // Se der erro 401 ou erro de rede, usuário não está autenticado
       return { token: null, isAuthenticated: false };
     }
   }
@@ -46,10 +39,10 @@ export const login = createAsyncThunk(
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       const response: AuthResponse = await processarLogin(credentials);
-      // O backend deve ter definido o cookie HTTP-only, não precisamos armazenar o token
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Erro ao fazer login");
+      console.log(error)
+      return rejectWithValue(error || "Erro ao fazer login");
     }
   }
 );
@@ -59,7 +52,6 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await processarLogout();
-      // O backend deve ter limpado o cookie, não precisamos fazer nada no frontend
       return null;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Erro ao fazer logout");
@@ -75,14 +67,13 @@ const authSlice = createSlice({
       state.error = null;
     },
     setUser(state, action: PayloadAction<AuthState>) {
-      state.user = action.payload.user;
+      state.usuario = action.payload.usuario;
       state.token = action.payload.token || null;
       state.isAuthenticated = action.payload.isAuthenticated;
     },
   },
   extraReducers(builder) {
     builder
-      // Initialize Auth
       .addCase(initializeAuth.pending, (state) => {
         state.isLoading = true;
       })
@@ -90,7 +81,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.token = action.payload.token || null;
         state.isAuthenticated = action.payload.isAuthenticated;
-        state.user = action.payload.user || null;
+        state.usuario = action.payload.user || null;
         state.isInitialized = true;
       })
       .addCase(initializeAuth.rejected, (state) => {
@@ -106,8 +97,8 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token || null;
+        state.usuario = action.payload.usuario;
+        state.token = action.payload.access_token || null;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -123,14 +114,14 @@ const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.isLoading = false;
-        state.user = null;
+        state.usuario = null;
         state.token = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logout.rejected, (state) => {
         state.isLoading = false;
-        state.user = null;
+        state.usuario = null;
         state.token = null;
         state.isAuthenticated = false;
       });

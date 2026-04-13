@@ -12,6 +12,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { processarLogout } from "../../modules/auth/service/authService";
 import { useAppSelector } from "../store/hooks";
 import { selectUser } from "../store/selectors/authSelectors";
+import { obterIconPerfil } from "../utils";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -33,11 +34,11 @@ const getPageTitle = (pathname: string): string => {
 };
 
 export default function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
-  const user = useAppSelector(selectUser);
+  const usuario = useAppSelector(selectUser);
 
   const fazerLogout = async() => {
     await processarLogout();
@@ -109,14 +110,14 @@ export default function AppLayout() {
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-slate-700 leading-none">
-                {user?.nome || "Usuário"}
+                {usuario?.nome || "Usuário"}
               </p>
               <p className="text-[11px] text-slate-500 font-medium">
-                {user?.setor?.nome || "Setor de TI"}
+                {usuario?.setor || "Sem Setor"}
               </p>
             </div>
             <div className="h-10 w-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold uppercase">
-               {user?.nome ? user.nome.substring(0, 2) : "US"}
+               {obterIconPerfil(usuario?.nome || "?")}
             </div>
           </div>
         </header>
@@ -146,9 +147,10 @@ function NavItem({ icon, label, collapsed, active, className, onClick }: NavItem
     <button
       onClick={onClick}
       className={`
-        w-full cursor-pointer flex items-center gap-4 rounded-lg px-3 py-2.5 transition-all justify-start
+        w-full cursor-pointer flex items-center gap-4 rounded-lg px-3 py-2.5 transition-all
         ${active ? "bg-[#1d48be] text-white shadow-md" : "text-blue-100 hover:bg-[#1d48be]"}
         ${className}
+        ${collapsed ? "justify-center" : "justify-start"}
       `}
     >
       <div className="shrink-0">{icon}</div>

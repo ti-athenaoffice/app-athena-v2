@@ -206,7 +206,7 @@ export function formatShortDate(dateString: string): string {
     if (isToday(dateString)) {
       return formatTimeBR(dateString);
     } else if (isYesterday(dateString)) {
-      return 'ontem';
+      return 'Ontem';
     } else {
       return formatDateBR(dateString);
     }

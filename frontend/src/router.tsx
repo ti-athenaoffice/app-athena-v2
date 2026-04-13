@@ -6,6 +6,8 @@ import ChamadosForm from "./modules/chamados/pages/ChamadosForm";
 import DashboardPage from "./modules/dashboard/pages/DashboardPage";
 import LoginPage from "./modules/auth/pages/LoginPage";
 import PerfilPage from "./modules/auth/pages/PerfilPage";
+import AdminPage from "./modules/admin/pages/AdminPage";
+import AdminUsuarioForm from "./modules/admin/pages/AdminUsuarioForm";
 
 export const router = createBrowserRouter([
   {
@@ -42,7 +44,15 @@ export const router = createBrowserRouter([
       },
       {
         path: "admin",
-        element: <div className="text-2xl font-bold">Admin (Em breve)</div>,
+        element: <AdminPage />
+      },
+      {
+        path: "admin/usuario/novo",
+        element: <AdminUsuarioForm />
+      },
+      {
+        path: "admin/usuario/editar/:id",
+        element: <AdminUsuarioForm />
       },
       {
         path: "configuracoes",

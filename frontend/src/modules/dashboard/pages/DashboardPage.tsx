@@ -8,13 +8,18 @@ import {
   FileText, 
   ArrowUpRight 
 } from "lucide-react";
+import { useAppSelector } from "../../../core/store/hooks";
+import { selectUser } from "../../../core/store/selectors/authSelectors";
 
 export default function DashboardPage() {
+
+  const usuario = useAppSelector(selectUser);
+
   return (
     <div className="space-y-8">
       {/* Cabeçalho de Boas-vindas */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Olá, Guilherme! 👋</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Olá,  {usuario.nome}! 👋</h1>
         <p className="text-sm text-slate-500 font-medium">Veja o que está acontecendo no App Athena hoje.</p>
       </div>
 

@@ -1,24 +1,32 @@
-import { useState, type ReactNode } from "react";
-import { 
-  MoreVertical, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  ExternalLink 
-} from "lucide-react";
-import { 
-  Menu, 
-  MenuItem, 
-  IconButton, 
-  ListItemIcon, 
-  ListItemText 
+import { useState, type ReactNode, type MouseEvent } from "react";
+import { MoreHorizontal, Eye, Edit3, Trash2 } from "lucide-react";
+import {
+  Paper,
+  Menu,
+  MenuItem,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Table as MuiTable,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Box,
+  Skeleton,
+  alpha,
+  useTheme,
+  Divider,
 } from "@mui/material";
 
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((item: T) => ReactNode);
-  className?: string;
   isActions?: boolean;
+  align?: "left" | "center" | "right";
+  width?: string | number;
 }
 
 interface DataTableProps<T> {
@@ -32,160 +40,194 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
 }
 
-
-function ActionMenu<T>({ 
-  item, 
-  onView, 
-  onEdit, 
-  onDelete 
-}: { 
-  item: T, 
-  onView?: (item: T) => void, 
-  onEdit?: (item: T) => void, 
-  onDelete?: (item: T) => void 
-}) {
+/**
+ * Menu de Ações Estilizado
+ */
+function ActionMenu<T>({ item, onView, onEdit, onDelete }: any) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const theme = useTheme();
 
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleOpen = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
   };
 
-  const handleClose = () => setAnchorEl(null);
+  const handleAction = (e: MouseEvent, action: (item: T) => void) => {
+    e.stopPropagation();
+    action(item);
+    setAnchorEl(null);
+  };
 
   return (
-    <div className="flex justify-end px-2">
+    <>
       <IconButton 
         onClick={handleOpen} 
-        size="small" 
-        className="hover:bg-blue-50 transition-colors"
+        size="small"
+        sx={{ 
+          color: theme.palette.text.secondary,
+          "&:hover": { backgroundColor: alpha(theme.palette.primary.main, 0.08) }
+        }}
       >
-        <MoreVertical size={18} className="text-slate-400 group-hover:text-blue-900" />
+        <MoreHorizontal size={20} />
       </IconButton>
 
       <Menu
         anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        elevation={3}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
         slotProps={{
           paper: {
-            elevation: 2,
-            className: "mt-1 border border-slate-100 rounded-xl min-w-[160px]"
+            sx: {
+              borderRadius: "12px",
+              minWidth: 160,
+              boxShadow: "0px 4px 20px rgba(0,0,0,0.08)",
+              mt: 0.5,
+            }
           }
         }}
       >
         {onView && (
-          <MenuItem onClick={() => { onView(item); handleClose(); }}>
-            <ListItemIcon><Eye size={16} className="text-blue-600" /></ListItemIcon>
-            <ListItemText primary="Visualizar" primaryTypographyProps={{ className: "text-sm font-medium text-slate-700" }} />
+          <MenuItem onClick={(e) => handleAction(e, onView)}>
+            <ListItemIcon><Eye size={18} color={theme.palette.text.secondary} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ variant: "body2", fontWeight: 500 }}>Visualizar</ListItemText>
           </MenuItem>
         )}
         {onEdit && (
-          <MenuItem onClick={() => { onEdit(item); handleClose(); }}>
-            <ListItemIcon><Edit size={16} className="text-amber-500" /></ListItemIcon>
-            <ListItemText primary="Editar" primaryTypographyProps={{ className: "text-sm font-medium text-slate-700" }} />
+          <MenuItem onClick={(e) => handleAction(e, onEdit)}>
+            <ListItemIcon><Edit3 size={18} color={theme.palette.text.secondary} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ variant: "body2", fontWeight: 500 }}>Editar</ListItemText>
           </MenuItem>
         )}
-        <div className="my-1 border-t border-slate-100" />
         {onDelete && (
-          <MenuItem onClick={() => { onDelete(item); handleClose(); }} className="hover:bg-red-50">
-            <ListItemIcon><Trash2 size={16} className="text-red-500" /></ListItemIcon>
-            <ListItemText primary="Excluir" primaryTypographyProps={{ className: "text-sm font-bold text-red-500" }} />
-          </MenuItem>
+          <Box mt={0.5}>
+            <Divider />
+            <MenuItem onClick={(e) => handleAction(e, onDelete)} sx={{ color: theme.palette.error.main }}>
+              <ListItemIcon><Trash2 size={18} color={theme.palette.error.main} /></ListItemIcon>
+              <ListItemText primaryTypographyProps={{ variant: "body2", fontWeight: 600 }}>Excluir</ListItemText>
+            </MenuItem>
+          </Box>
         )}
       </Menu>
-    </div>
+    </>
   );
 }
 
 export function Table<T extends { id: string | number }>({
   columns,
   data,
-  isLoading,
+  isLoading = false,
   emptyMessage = "Nenhum registro encontrado.",
   onView,
   onEdit,
   onDelete,
-  onRowClick
+  onRowClick,
 }: DataTableProps<T>) {
-  return (
-    <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          {/* Header */}
-          <thead className="bg-slate-50/80 border-b border-slate-200">
-            <tr>
-              {columns.map((column, index) => (
-                <th
-                  key={index}
-                  className={`px-6 py-4 text-[11px] font-black uppercase tracking-widest text-blue-900/70 ${column.className}`}
-                >
-                  {column.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
+  const theme = useTheme();
 
-          {/* Body */}
-          <tbody className="divide-y divide-slate-100">
-            {isLoading ? (
-              // Skeleton Loading
-              [...Array(5)].map((_, i) => (
-                <tr key={i} className="animate-pulse">
-                  {columns.map((_, j) => (
-                    <td key={j} className="px-6 py-5">
-                      <div className="h-3 bg-slate-100 rounded-full w-3/4" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : data.length > 0 ? (
-              data.map((item) => (
-                <tr 
-                  key={item.id} 
-                  className={`group hover:bg-blue-50/30 transition-all duration-200 ${onRowClick ? 'cursor-pointer' : ''}`}
-                  onClick={onRowClick ? () => onRowClick(item) : undefined}
-                >
-                  {columns.map((column, index) => (
-                    <td
-                      key={index}
-                      className={`px-6 py-4 text-sm text-slate-600 font-medium ${column.className}`}
-                    >
-                      {/* Se for a coluna de ações, renderiza o menu, senão os dados normais */}
-                      {column.isActions ? (
-                        <ActionMenu 
-                          item={item} 
-                          onView={onView} 
-                          onEdit={onEdit} 
-                          onDelete={onDelete} 
+  return (
+    <TableContainer 
+      component={Paper} 
+      elevation={0}
+      sx={{ 
+        borderRadius: "16px", 
+        border: `1px solid ${theme.palette.divider}`,
+        overflow: "hidden"
+      }}
+    >
+      <MuiTable sx={{ minWidth: 650 }}>
+        <TableHead sx={{ backgroundColor: alpha(theme.palette.text.primary, 0.02) }}>
+          <TableRow>
+            {columns.map((column, index) => (
+              <TableCell
+                key={index}
+                align={column.align || "left"}
+                sx={{ 
+                  color: theme.palette.text.secondary,
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  py: 2,
+                  width: column.width
+                }}
+              >
+                {column.header}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {isLoading ? (
+            [...Array(5)].map((_, rowIndex) => (
+              <TableRow key={rowIndex}>
+                {columns.map((_, colIndex) => (
+                  <TableCell key={colIndex} sx={{ py: 2.5 }}>
+                    <Skeleton variant="rounded" height={20} width={colIndex === 0 ? "40%" : "80%"} sx={{ borderRadius: "4px" }} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : data.length > 0 ? (
+            data.map((item) => (
+              <TableRow
+                key={item.id}
+                hover
+                onClick={onRowClick ? () => onRowClick(item) : undefined}
+                sx={{
+                  cursor: onRowClick ? "pointer" : "default",
+                  transition: "background-color 0.2s ease",
+                  "&:last-child td, &:last-child th": { border: 0 },
+                  "&:hover": {
+                    backgroundColor: `${alpha(theme.palette.primary.main, 0.02)} !important`,
+                  },
+                }}
+              >
+                {columns.map((column, index) => (
+                  <TableCell
+                    key={index}
+                    align={column.align || "left"}
+                    sx={{ py: 2, color: theme.palette.text.primary, fontSize: "0.875rem" }}
+                  >
+                    {column.isActions ? (
+                      <Box display="flex" justifyContent={column.align === "center" ? "center" : "flex-end"}>
+                        <ActionMenu
+                          item={item}
+                          onView={onView}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
                         />
-                      ) : typeof column.accessor === "function" ? (
-                        column.accessor(item)
-                      ) : (
-                        (item[column.accessor] as ReactNode)
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-6 py-20 text-center text-sm text-slate-400 font-medium italic"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <ExternalLink size={32} className="text-slate-200" />
+                      </Box>
+                    ) : typeof column.accessor === "function" ? (
+                      column.accessor(item)
+                    ) : (
+                      <Typography variant="body2" fontWeight={500}>
+                        {String(item[column.accessor])}
+                      </Typography>
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length}>
+                <Box py={8} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+                  <Typography variant="body1" fontWeight={600} color="text.secondary">
                     {emptyMessage}
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled">
+                    Tente ajustar seus filtros ou termos de busca.
+                  </Typography>
+                </Box>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </MuiTable>
+    </TableContainer>
   );
 }

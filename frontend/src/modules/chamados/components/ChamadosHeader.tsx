@@ -15,7 +15,7 @@ export default function ChamadosHeader({ viewMode, onChangeViewMode }: ChamadosH
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Central de Chamados</h1>
         <p className="text-sm text-slate-500 font-medium">
-          Gerencie as solicitações internas da Athena Group
+          Gerenciamento de solicitações internas da empresa
         </p>
       </div>
 

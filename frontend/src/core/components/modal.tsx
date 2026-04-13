@@ -23,10 +23,10 @@ interface ModalProps extends Omit<DialogProps, 'open' | 'onClose'> {
 export default function Modal({
   open,
   onClose,
-  title,
+  title = "",
   children,
   actions,
-  maxWidth = 'md',
+  maxWidth = 'lg',
   fullWidth = true,
   showCloseButton = true,
   ...props
@@ -44,7 +44,7 @@ export default function Modal({
       }}
     >
       {(title || showCloseButton) && (
-        <DialogTitle className="flex items-center justify-between p-6 pb-4">
+        <DialogTitle className="flex items-center justify-end p-6 pb-4">
           {title && (
             <h2 className="text-xl font-bold text-blue-900">{title}</h2>
           )}

@@ -2,19 +2,17 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { LogIn, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
-
 import Input from "../../../core/components/input";
 import Button from "../../../core/components/button";
 import type { Login } from "../types/Login";
 import { useAppDispatch, useAppSelector } from "../../../core/store/hooks";
 import { login } from "../../../core/store/slices/authSlice";
-import { selectError, selectIsLoading } from "../../../core/store/selectors/authSelectors";
+import { selectIsLoading } from "../../../core/store/selectors/authSelectors";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector(selectIsLoading);
-  const error = useAppSelector(selectError);
 
   const {
     register,
@@ -33,7 +31,7 @@ export default function LoginPage() {
       navigate("/dashboard");
       toast.success("Bem-vindo ao App Athena!");
     } catch (err) {
-      toast.error(error || "Falha no login. Verifique suas credenciais e tente novamente.");
+      toast.error(err.message || "Falha no login. Verifique suas credenciais e tente novamente.");
     }
   };
 

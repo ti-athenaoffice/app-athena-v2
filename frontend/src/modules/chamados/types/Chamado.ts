@@ -2,7 +2,7 @@ export interface Chamado {
   id: string;
   titulo: string;
   descricao?: string;
-  status: "ABERTO" | "EM_ATENDIMENTO" | "CONCLUIDO" | "CANCELADO";
+  status: "PENDENTE" | "EM_ANDAMENTO" | "CONCLUIDO" | "CANCELADO";
   setor_solicitante: string;
   setor_solicitado: string;
   prioridade: "Baixa" | "Média" | "Alta";

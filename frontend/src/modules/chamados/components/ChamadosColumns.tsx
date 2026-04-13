@@ -1,7 +1,7 @@
 import { ArrowLeftRight } from "lucide-react";
 import type { Column } from "../../../core/components/table";
 import type { Chamado } from "../types/Chamado";
-import { formatShortDate, formatRelativeTime } from "../../../core/utils/dateUtils";
+import { formatShortDate, formatRelativeTime, formatDateTimeFullBR } from "../../../core/utils/dateUtils";
 
 export const chamadosColumns: Column<Chamado>[] = [
   {
@@ -14,7 +14,7 @@ export const chamadosColumns: Column<Chamado>[] = [
   },
   { 
     header: "Título", 
-    accessor: "titulo", // Este está correto (bate com o log)
+    accessor: "titulo",
     className: "font-medium text-slate-700" 
   },
   {
@@ -54,14 +54,34 @@ export const chamadosColumns: Column<Chamado>[] = [
     },
   },
   {
-    header: "Criado em",
+    header: "Prioridade", 
+    accessor: (item) => {
+      const styles = {
+        BAIXA: "bg-green-100 text-green-700 border-green-200",
+        MEDIA: "bg-yellow-100 text-yellow-700 border-yellow-200",
+        ALTA: "bg-orange-100 text-orange-700 border-orange-200",
+        URGENTE: "bg-red-100 text-red-700 border-red-200",
+      };
+      return (
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${
+            styles[item.prioridade as keyof typeof styles] || "bg-slate-100 text-slate-600"
+          }`}
+        >
+          {item.prioridade.replace("_", " ")}
+        </span>
+      );
+    },
+  },
+  {
+    header: "Solicitado em",
     accessor: (item: any) => (
       <div className="text-xs">
         <div className="font-medium text-slate-700">
-          {formatShortDate(item.created_at)}
+          {formatDateTimeFullBR(item.created_at)}
         </div>
         <div className="text-slate-500">
-          {formatRelativeTime(item.created_at)}
+          {formatShortDate(item.created_at)}
         </div>
       </div>
     ),

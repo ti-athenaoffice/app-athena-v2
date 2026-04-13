@@ -6,7 +6,6 @@ interface ConfirmacaoProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void | Promise<void>;
-  title?: string;
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
@@ -18,7 +17,6 @@ export default function Confirmacao({
   open,
   onClose,
   onConfirm,
-  title = "Confirmar Ação",
   message,
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
@@ -34,7 +32,6 @@ export default function Confirmacao({
     <Modal
       open={open}
       onClose={onClose}
-      title={title}
       maxWidth="sm"
       actions={
         <div className="flex gap-3 w-full justify-end">
