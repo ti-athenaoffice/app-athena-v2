@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageSquareText } from "lucide-react";
 import {
+  useAddMensagemChamadoInCache,
   useCreateMensagemChamado,
   useMensagemChamado,
 } from "../hooks/useMensagemChamados";
@@ -12,41 +13,130 @@ import Loading from "../../../core/components/loading";
 import ErroMensagem from "../../../core/components/erroMensagem";
 import { Alert } from "@mui/material";
 import type { Chamado } from "../types/Chamado";
-import type { Usuario } from "../../../core/store/types/authTypes";
+import {ouvirNovaMensagemChamado} from "../service/mensagemRealTime.ts";
+import {ordenarMensagens, scrollToBottom} from "../utils/utils.ts";
+import {notifyBrowser} from "../../../core/utils/browserNotification.ts";
 
 interface ChamadoChatProps {
   chamado: Chamado;
-  usuario: Usuario
+  usuario: any;
 }
 
 export default function ChamadoChat({ usuario, chamado }: ChamadoChatProps) {
-  const { data: mensagens, isLoading, error } = useMensagemChamado(chamado.id);
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMensagemChamado(chamado.id);
   const { mutate: criarMensagemMutate, isPending } = useCreateMensagemChamado();
-
+  const addMensagemChamadoInCache = useAddMensagemChamadoInCache();
   const [novaMensagem, setNovaMensagem] = useState("");
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const jaPosicionouNoFimRef = useRef(false);
+  const deveRolarAposEnvioRef = useRef(false);
+  const mensagens = useMemo(() => ordenarMensagens(data as any), [data]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || !deveRolarAposEnvioRef.current) return;
+    if (!mensagens.length) return;
+
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+      deveRolarAposEnvioRef.current = false;
+    });
+  }, [mensagens.length]);
 
   const postarMensagemChamado = () => {
     if (!novaMensagem.trim()) {
       toast.error("Digite uma mensagem.");
       return;
     }
-
-    criarMensagemMutate(
-      {
+    deveRolarAposEnvioRef.current = true;
+    criarMensagemMutate({
         chamado_id: chamado.id,
         descricao: novaMensagem,
-      },
-      {
+      },{
         onSuccess: () => {
           setNovaMensagem("");
           toast.success("Mensagem publicada com sucesso!");
+          scrollToBottom(scrollRef.current);
         },
         onError: () => {
           toast.error("Erro ao publicar mensagem.");
+          deveRolarAposEnvioRef.current = false;
         },
       },
     );
   };
+
+  useEffect(() => {
+    const channel = ouvirNovaMensagemChamado(
+        chamado.setor_solicitante,
+        chamado.setor_solicitado,
+        (mensagem) => {
+          addMensagemChamadoInCache(chamado.id, mensagem.mensagem);
+
+          const autorDaMensagem = String(mensagem.mensagem.usuario_id);
+          const meuUsuarioId = String(usuario?.id);
+
+          if (autorDaMensagem === meuUsuarioId) {
+            return;
+          }
+
+          notifyBrowser({
+            title: "Nova mensagem recebida no chamado " + `#${chamado.id}`,
+            body: mensagem.mensagem.descricao ?? "Nova mensagem recebida",
+            tag: `chamado-${chamado.id}`,
+            renotify: true,
+            icon: "/logo-athena-white.png",
+            badge: "/logo-athena-white.png",
+            requireInteraction: false,
+            preventWhenVisible: false,
+            onClick: (_event, notification) => {
+              window.focus();
+              notification.close();
+            },
+          });
+        }
+    );
+
+    return () => {
+      channel.stopListening(".nova.mensagem.chamado");
+    };
+  }, [chamado.id, chamado.setor_solicitante, chamado.setor_solicitado, usuario?.id, addMensagemChamadoInCache]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = async () => {
+      if (container.scrollTop <= 80 && hasNextPage && !isFetchingNextPage) {
+        const alturaAntes = container.scrollHeight;
+        const scrollTopAntes = container.scrollTop;
+
+        await fetchNextPage();
+
+        requestAnimationFrame(() => {
+          const novaAltura = container.scrollHeight;
+          container.scrollTop = novaAltura - alturaAntes + scrollTopAntes;
+        });
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || jaPosicionouNoFimRef.current || !mensagens.length) return;
+    container.scrollTop = container.scrollHeight;
+    jaPosicionouNoFimRef.current = true;
+  }, [mensagens.length]);
 
   if (isLoading) {
     return <Loading message="Carregando mensagens... Só um instante." />;
@@ -68,23 +158,37 @@ export default function ChamadoChat({ usuario, chamado }: ChamadoChatProps) {
       </div>
 
       <div className="space-y-6">
-        {mensagens?.data?.length ? (
-          mensagens.data.map((msg) => (
-            <TimelineItem
-              key={msg.id}
-              icon={obterIconPerfil(msg.usuario?.nome || "U")}
-              usuarioNome={msg.usuario?.nome || "Usuário"}
-              usuarioSetor={msg.usuario?.setor || ""}
-              date={msg.created_at.toString()}
-              descricao={msg.descricao}
-            />
-          ))
-        ) : (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            Sem mensagens por enquanto. Assim que alguém responder, as mensagens
-            aparecerão aqui.
-          </Alert>
-        )}
+        <div
+          ref={scrollRef}
+          className="max-h-[420px] overflow-y-auto pr-2"
+        >
+          {mensagens.length ? (
+            <div className="space-y-6">
+              {isFetchingNextPage && (
+                <div className="flex items-center justify-center py-2">
+                  <Loading size={30} message="Buscando mensagens..." />
+                </div>
+              )}
+
+              {mensagens.map((msg: any) => (
+                <TimelineItem
+                  key={msg.id}
+                  icon={obterIconPerfil(msg.usuario?.nome || "U")}
+                  usuarioNome={msg.usuario?.nome || "Usuário"}
+                  usuarioSetor={msg.usuario?.setor || ""}
+                  date={msg?.created_at?.toString()}
+                  descricao={msg.descricao}
+                />
+              ))}
+            </div>
+          ) : (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Sem mensagens por enquanto. Assim que alguém responder, as
+              mensagens aparecerão aqui.
+            </Alert>
+          )}
+        </div>
+
         {chamado.status !== "CONCLUIDO" && (
           <div className="mt-8 pt-6 border-t border-slate-200">
             <div className="flex gap-4">

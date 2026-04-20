@@ -6,6 +6,7 @@ import { useDeleteChamado, useUpdateStatusChamado } from "../hooks/useChamados";
 import { useState } from "react";
 import Confirmacao from "../../../core/components/confirmacao";
 import toast from "react-hot-toast";
+import {formatDateBR} from "../../../core/utils";
 
 interface ChamadoHeaderProps {
   usuario: any;
@@ -76,7 +77,7 @@ export default function ChamadoHeader({
         },
       },
     );
-  }
+  };
 
   const onDelete = async () => {
     apagarChamado(chamado.id, {
@@ -90,7 +91,8 @@ export default function ChamadoHeader({
     });
   };
 
-  return (
+  // @ts-ignore
+    return (
     <div className="flex justify-between items-start gap-4 pb-4 border-b border-slate-200">
       <div>
         <div className="flex items-center gap-2 text-slate-500 mb-1">
@@ -104,64 +106,70 @@ export default function ChamadoHeader({
         </h1>
         <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
           <CalendarDays size={14} /> Aberto em{" "}
-          {new Date(chamado.created_at).toLocaleDateString("pt-BR")} por{" "}
+          {formatDateBR(chamado?.created_at?.toString() ?? "")} por{" "}
           {chamado.nome_funcionario || "Sistema"}
         </p>
       </div>
 
       <div className="flex items-center gap-3 shrink-0 pt-2">
-        {!isFinalizado && usuario.setor === chamado.setor_solicitante && (
-          <>
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
-              startIcon={<Trash size={16} />}
-              onClick={() => setConfirmarExclusao(true)}
-              isLoading={isDeleting}
-            >
-              Excluir
-            </Button>
+        {!isFinalizado &&
+          usuario?.setor === chamado.setor_solicitante &&
+          chamado.status !== "EM_ANDAMENTO" && (
+            <>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<Trash size={16} />}
+                onClick={() => setConfirmarExclusao(true)}
+                isLoading={isDeleting}
+              >
+                Excluir
+              </Button>
 
+              <Button
+                variant="outlined"
+                color="primary"
+                size="small"
+                startIcon={<Edit2 size={16} />}
+                onClick={() =>
+                  navigate(`/chamados/editar/${chamado.id}`, {
+                    state: { chamado },
+                  })
+                }
+              >
+                Editar
+              </Button>
+            </>
+          )}
+        {!isFinalizado &&
+          usuario.setor === chamado.setor_solicitado &&
+          chamado.status === "PENDENTE" && (
             <Button
-              variant="outlined"
-              color="primary"
+              variant="contained"
+              color="info"
               size="small"
-              startIcon={<Edit2 size={16} />}
-              onClick={() =>
-                navigate(`/chamados/editar/${chamado.id}`, {
-                  state: { chamado },
-                })
-              }
+              startIcon={<Check size={16} />}
+              onClick={() => setConfirmarEmAndamento(true)}
+              isLoading={isUpdating}
             >
-              Editar
+              Assumir
             </Button>
-          </>
-        )}
-        {!isFinalizado && usuario.setor !== chamado.setor_solicitante && chamado.status === "PENDENTE" && (
-          <Button
-            variant="contained"
-            color="info"
-            size="small"
-            startIcon={<Check size={16} />}
-            onClick={() => setConfirmarEmAndamento(true)}
-            isLoading={isUpdating}
-          >
-            Assumir
-          </Button>
-        )}
-        {!isFinalizado && usuario.setor !== chamado.setor_solicitante && chamado.status === "EM_ANDAMENTO" && (
-          <Button
-            variant="contained"
-            color="success"
-            size="small"
-            startIcon={<Check size={16} />}
-            onClick={() => setConfirmarFinalizacao(true)}
-            isLoading={isUpdating}
-          >
-            Finalizar
-          </Button>
-        )}
+          )}
+        {!isFinalizado &&
+          usuario?.setor !== chamado.setor_solicitante &&
+          chamado.status === "EM_ANDAMENTO" && (
+            <Button
+              variant="contained"
+              color="success"
+              size="small"
+              startIcon={<Check size={16} />}
+              onClick={() => setConfirmarFinalizacao(true)}
+              isLoading={isUpdating}
+            >
+              Finalizar
+            </Button>
+          )}
       </div>
       <Confirmacao
         message="Deseja realmente finalizar este chamado? Esta ação não poderá ser desfeita."

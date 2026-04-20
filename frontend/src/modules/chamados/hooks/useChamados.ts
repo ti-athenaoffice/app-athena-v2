@@ -9,6 +9,7 @@ import {
   listarChamados,
   type ChamadosFiltros,
 } from "../service/chamadoService";
+import type {Chamado} from "../types/Chamado.ts";
 
 export function useChamados(page = 1, filtros: ChamadosFiltros = {}) {
   const { data, isLoading, isFetching, error } = useQuery({
@@ -39,6 +40,78 @@ export function useChamado(id: string | undefined) {
     },
   });
   return { data, isLoading, isFetching, error };
+}
+
+export function useAddChamadoInCache() {
+  const queryClient = useQueryClient();
+  return (chamado: Chamado) => {
+    queryClient.setQueriesData({ queryKey: ["chamados"] }, (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      const alreadyExists = oldData.data.some(
+          (item: Chamado) => String(item.id) === String(chamado.id)
+      );
+      if (alreadyExists) return oldData;
+      return {
+        ...oldData,
+        data: [chamado, ...oldData.data],
+      };
+    });
+    queryClient.setQueryData(["chamado", chamado.id], chamado);
+  };
+}
+
+export function useDeleteChamadoInCache() {
+  const queryClient = useQueryClient();
+  return (id: string) => {
+    queryClient.setQueriesData({ queryKey: ["chamados"] }, (oldData: any) => {
+      if (!oldData) return oldData;
+      if (Array.isArray(oldData.data)) {
+        return {
+          ...oldData,
+          data: oldData.data.filter((item: any) => String(item.id) !== id),
+        };
+      }
+      if (Array.isArray(oldData)) {
+        return oldData.filter((item: any) => String(item.id) !== id);
+      }
+      return oldData;
+    });
+    queryClient.removeQueries({ queryKey: ["chamado", id] });
+  };
+}
+
+export function useUpdateChamadoInCache() {
+  const queryClient = useQueryClient();
+  return (chamadoAtualizado: Chamado) => {
+    queryClient.setQueriesData(
+        { queryKey: ["chamados"] },
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          if (Array.isArray(oldData.data)) {
+            return {
+              ...oldData,
+              data: oldData.data.map((item: Chamado) =>
+                  String(item.id) === String(chamadoAtualizado.id)
+                      ? chamadoAtualizado
+                      : item
+              ),
+            };
+          }
+          if (Array.isArray(oldData)) {
+            return oldData.map((item: Chamado) =>
+                String(item.id) === String(chamadoAtualizado.id)
+                    ? chamadoAtualizado
+                    : item
+            );
+          }
+          return oldData;
+        }
+    );
+    queryClient.setQueryData(
+        ["chamado", chamadoAtualizado.id],
+        chamadoAtualizado
+    );
+  };
 }
 
 export function useCreateChamado() {

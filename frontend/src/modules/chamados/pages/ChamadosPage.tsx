@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Table } from "../../../core/components/table";
 import Modal from "../../../core/components/modal";
 import ChamadosHeader from "../components/ChamadosHeader";
@@ -6,10 +6,25 @@ import ChamadosFilters from "../components/ChamadosFilters";
 import ChamadosKanban from "../components/ChamadosKanban";
 import ChamadosDetalhes from "./ChamadosDetalhes";
 import { chamadosColumns } from "../components/ChamadosColumns";
-import { useChamados } from "../hooks/useChamados";
+import {
+  useAddChamadoInCache,
+  useChamados,
+  useDeleteChamadoInCache,
+  useUpdateChamadoInCache
+} from "../hooks/useChamados";
 import Button from "../../../core/components/button";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ChamadosFiltros } from "../service/chamadoService";
+import {
+  ouvirChamadoAtualizado, ouvirChamadoDeletado,
+  ouvirNovoChamado,
+  pararDeOuvirChamados
+} from "../service/chamadosRealTime";
+import { selectUser } from "../../../core/store/selectors/authSelectors";
+import { useAppSelector } from "../../../core/store/hooks";
+import toast from "react-hot-toast";
+import type { Chamado } from "../types/Chamado";
+import {notifyBrowser} from "../../../core/utils/browserNotification.ts";
 
 export default function ChamadosPage() {
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -17,6 +32,10 @@ export default function ChamadosPage() {
   const [selectedChamadoId, setSelectedChamadoId] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [protocoloInput, setProtocoloInput] = useState("");
+  const usuario = useAppSelector(selectUser);
+  const addChamadoInCache = useAddChamadoInCache();
+  const updateChamadoInCache = useUpdateChamadoInCache();
+  const deleteChamadoInCache = useDeleteChamadoInCache();
 
   const [filtros, setFiltros] = useState<ChamadosFiltros>({
     protocolo: "",
@@ -47,11 +66,11 @@ export default function ChamadosPage() {
     queryClient.invalidateQueries({ queryKey: ["chamados"] });
   };
 
-  const handleFilterChange = (field: keyof ChamadosFiltros, value: string) => {
+  const handleFilterChange = (field: keyof ChamadosFiltros, value: unknown) => {
     setPage(1);
     setFiltros((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: value as string,
     }));
   };
 
@@ -66,63 +85,108 @@ export default function ChamadosPage() {
     });
   };
 
+  useEffect(() => {
+    if (!usuario?.setor) return;
+    const channel = ouvirNovoChamado(usuario.setor, (novoChamado) => {
+      const chamadoCompleto: Chamado = {
+        ...novoChamado,
+        id: String(novoChamado.id),
+      };
+      notifyBrowser({
+        title: "Novo chamado para seu setor",
+        body: novoChamado.titulo ?? "Nova mensagem recebida",
+        tag: `chamado-${novoChamado.id}`,
+        renotify: true,
+        icon: "/logo-athena-white.png",
+        badge: "/logo-athena-white.png",
+        requireInteraction: false,
+        preventWhenVisible: false,
+        onClick: (_event, notification) => {
+          window.focus();
+          notification.close();
+        },
+      });
+      addChamadoInCache(chamadoCompleto);
+    });
+
+    const channelEdit = ouvirChamadoAtualizado(usuario.setor, (chamadoAtualizado) => {
+      const chamadoCompleto: Chamado = {
+        ...chamadoAtualizado,
+        id: String(chamadoAtualizado.id),
+      };
+      toast.success(`Chamado atualizado: ${chamadoCompleto.titulo}`);
+      updateChamadoInCache(chamadoCompleto);
+    });
+
+    const channelDelete = ouvirChamadoDeletado(usuario.setor, (event) => {
+      const id = String(event.chamadoId);
+      deleteChamadoInCache(id);
+    });
+
+    return () => {
+      pararDeOuvirChamados(usuario.setor ?? '');
+      channel.stopListening(".novo.chamado");
+      channelEdit.stopListening(".editar.chamado");
+      channelDelete.stopListening(".apagar.chamado");
+    };
+  }, [usuario?.setor, queryClient]);
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-600 font-medium mb-2">
-            Erro ao carregar chamados
-          </p>
-          <p className="text-slate-600 text-sm my-5">
-            {error instanceof Error ? error.message : "Erro desconhecido"}
-          </p>
-          <Button onClick={handleRefetch} variant="contained">
-            Tentar novamente
-          </Button>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-600 font-medium mb-2">
+              Erro ao carregar chamados
+            </p>
+            <p className="text-slate-600 text-sm my-5">
+              {error instanceof Error ? error.message : "Erro desconhecido"}
+            </p>
+            <Button onClick={handleRefetch} variant="contained">
+              Tentar novamente
+            </Button>
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <ChamadosHeader viewMode={viewMode} onChangeViewMode={setViewMode} />
+      <div className="space-y-6">
+        <ChamadosHeader viewMode={viewMode} onChangeViewMode={setViewMode} />
 
-      <ChamadosFilters
-        filtros={filtros}
-        protocoloInput={protocoloInput}
-        onProtocoloInputChange={setProtocoloInput}
-        onSearch={() =>
-          handleFilterChange("protocolo", protocoloInput.replace(/^0+/, ""))
-        }
-        onChange={handleFilterChange}
-        onClear={handleClearFilters}
-      />
-
-      {viewMode === "list" ? (
-        <Table
-          columns={chamadosColumns}
-          data={chamados?.data ?? []}
-          onRowClick={handleRowClick}
-          isLoading={isFetching || isLoading}
-          emptyMessage="Nenhum chamado encontrado."
+        <ChamadosFilters
+            filtros={filtros}
+            protocoloInput={protocoloInput}
+            onProtocoloInputChange={setProtocoloInput}
+            onSearch={() =>
+                handleFilterChange("protocolo", protocoloInput.replace(/^0+/, ""))
+            }
+            onChange={handleFilterChange}
+            onClear={handleClearFilters}
         />
-      ) : (
-        <ChamadosKanban
-          data={chamados?.data ?? []}
-          onCardClick={handleRowClick}
-        />
-      )}
 
-      <Modal open={isModalOpen} onClose={handleCloseModal}>
-        {selectedChamadoId && (
-          <ChamadosDetalhes
-            chamadoId={selectedChamadoId}
-            onClose={handleCloseModal}
-          />
+        {viewMode === "list" ? (
+            <Table
+                columns={chamadosColumns}
+                data={chamados?.data ?? []}
+                onRowClick={handleRowClick}
+                isLoading={isFetching || isLoading}
+                emptyMessage="Nenhum chamado encontrado."
+            />
+        ) : (
+            <ChamadosKanban
+                data={chamados?.data ?? []}
+                onCardClick={handleRowClick}
+            />
         )}
-      </Modal>
-    </div>
+
+        <Modal open={isModalOpen} onClose={handleCloseModal}>
+          {selectedChamadoId && (
+              <ChamadosDetalhes
+                  chamadoId={selectedChamadoId}
+                  onClose={handleCloseModal}
+              />
+          )}
+        </Modal>
+      </div>
   );
 }

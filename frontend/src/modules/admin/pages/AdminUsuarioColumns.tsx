@@ -22,6 +22,6 @@ export const AdminUsuariosColumns: Column<Usuario>[] = [
   {
     header: "Criado em",
     accessor: (item) =>
-      formatDateTimeFullBR(item.created_at.toString())
+      item.created_at ? formatDateTimeFullBR(item.created_at.toString()) : "-"
   },
 ];

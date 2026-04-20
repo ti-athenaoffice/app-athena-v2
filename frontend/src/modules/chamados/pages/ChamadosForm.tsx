@@ -126,27 +126,27 @@ export default function ChamadosForm() {
 
             <div className="md:col-span-2">
               <Controller
-                name="nome_funcionario_requisitado"
-                control={control}
-                render={({ field }) => {
-                  const selectedOption =
-                    usuarios.find((opt) => opt.value === field.value) ?? null;
+                  name="nome_funcionario_requisitado"
+                  control={control}
+                  render={({ field }) => {
+                    const selectedOption =
+                        usuarios.find((opt) => opt.value === field.value) ?? null;
 
-                  return (
-                    <AutoSelect
-                      label="Nome funcionário Requisitado"
-                      options={usuarios}
-                      value={selectedOption}
-                      disabled={isFetching}
-                      loading={isFetching}
-                      onChange={(_, option) =>
-                        field.onChange(option?.value ?? null)
-                      }
-                      error={!!errors.nome_funcionario_requisitado}
-                      helperText={errors.nome_funcionario_requisitado?.message}
-                    />
-                  );
-                }}
+                    return (
+                        <AutoSelect
+                            label="Nome funcionário Requisitado"
+                            options={usuarios}
+                            value={selectedOption}
+                            disabled={isFetching}
+                            loading={isFetching}
+                            onChange={(_, option) =>
+                                field.onChange(option?.value ?? "")
+                            }
+                            error={!!errors.nome_funcionario_requisitado}
+                            helperText={errors.nome_funcionario_requisitado?.message}
+                        />
+                    );
+                  }}
               />
             </div>
 
@@ -157,7 +157,7 @@ export default function ChamadosForm() {
                 render={({ field }) => (
                   <QuillEditor
                     label="Descrição Detalhada *"
-                    value={field.value}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     error={!!errors.descricao}
                     helperText={errors.descricao?.message}

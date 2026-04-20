@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Ticket,
   Users,
-  UserCircle,
   LogOut,
   ChevronRight,
   Settings,
@@ -18,7 +17,6 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Ticket, label: "Chamados", path: "/chamados" },
   { icon: Users, label: "Administração", path: "/admin" },
-  { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
 const getPageTitle = (pathname: string): string => {
@@ -84,10 +82,10 @@ export default function AppLayout() {
         {/* Footer da Sidebar (Perfil/Logout) */}
         <div className="border-t border-blue-800 p-2 space-y-1">
           <NavItem
-            icon={<UserCircle size={22} />}
+            icon={<Settings size={22} />}
             label="Meu Perfil"
             collapsed={collapsed}
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/configuracoes")}
           />
           <NavItem
             icon={<LogOut size={22} className="text-red-400" />}

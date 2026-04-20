@@ -30,7 +30,7 @@ export default function LoginPage() {
       await dispatch(login(data)).unwrap();
       navigate("/dashboard");
       toast.success("Bem-vindo ao App Athena!");
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.message || "Falha no login. Verifique suas credenciais e tente novamente.");
     }
   };

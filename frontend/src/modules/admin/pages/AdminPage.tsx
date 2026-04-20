@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import Button from "../../../core/components/button";
-import { Table } from "../../../core/components/table";
+import { Table, type Column } from "../../../core/components/table";
 import { useUsuarios } from "../hooks/useUsuario";
 import { AdminUsuariosColumns } from "./AdminUsuarioColumns";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ export default function AdminPage() {
   const { data: usuarios, isFetching } = useUsuarios();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [usuarioSelecionado, setUsuarioSelecionado] = useState<Funcionario>(null);
+  const [usuarioSelecionado, setUsuarioSelecionado] = useState<Funcionario | null>(null);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -24,6 +24,9 @@ export default function AdminPage() {
     setIsModalOpen(true);
     setUsuarioSelecionado(item);
   };
+
+  const columns = AdminUsuariosColumns as unknown as Column<{ id: string | number }>[];
+  const data = (usuarios?.data ?? []) as unknown as { id: string | number }[];
 
   return (
     <>
@@ -37,8 +40,8 @@ export default function AdminPage() {
         </Button>
       </div>
       <Table
-        columns={AdminUsuariosColumns}
-        data={usuarios?.data ?? []}
+        columns={columns}
+        data={data}
         onRowClick={handleRowClick}
         isLoading={isFetching}
         emptyMessage="Nenhum chamado encontrado."

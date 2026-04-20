@@ -28,13 +28,13 @@ export default function ChamadosKanban({ data, onCardClick }: ChamadosKanbanProp
                   className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 transition-all cursor-pointer group"
                   onClick={onCardClick ? () => onCardClick(chamado) : undefined}
                 >
-                  <p className="text-[10px] font-bold text-blue-600 mb-1">#{chamado.protocolo}</p>
+                  <p className="text-[10px] font-bold text-blue-600 mb-1">#{chamado.id}</p>
                   <h4 className="text-sm font-bold text-slate-800 leading-tight group-hover:text-blue-900">
                     {chamado.titulo}
                   </h4>
                   <div className="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center text-[10px] text-slate-500">
-                    <span>De: {chamado.setorOrigem}</span>
-                    <span className="font-medium">{chamado.data}</span>
+                    <span>De: {chamado.setor_solicitante}</span>
+                    <span className="font-medium">{chamado?.created_at?.toString() ?? "-"}</span>
                   </div>
                 </div>
               ))}

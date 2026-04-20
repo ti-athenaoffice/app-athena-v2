@@ -13,7 +13,7 @@ interface ChamadosFiltersProps {
   protocoloInput: string;
   onProtocoloInputChange: (value: string) => void;
   onSearch: () => void;
-  onChange: (field: keyof ChamadosFiltros, value: string) => void;
+  onChange: (field: keyof ChamadosFiltros, value: unknown) => void;
   onClear: () => void;
 }
 export default function ChamadosFilters({
@@ -65,7 +65,7 @@ export default function ChamadosFilters({
           placeholder="Todos"
           options={getVisualizarOptions()}
           value={filtros.visualizar ?? "PARA_MEU_SETOR"}
-          onChange={(e) => onChange("visualizar", e.target.value)}
+          onChange={(e) => onChange("visualizar", e?.target?.value)}
         />
       </div>
 

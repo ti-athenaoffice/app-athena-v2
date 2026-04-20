@@ -2,7 +2,7 @@ import api from "../../../core/service/api";
 import type { Login } from "../types/Login";
 
 export async function processarLogin(login: Login) {
-  const response = await api.post("/api/login", {
+  const response = await api.post("/login", {
     email: login.email,
     senha: login.senha,
   });
@@ -10,5 +10,5 @@ export async function processarLogin(login: Login) {
 }
 
 export async function processarLogout() {
-  await api.post("/api/logout");
+  await api.post("/logout");
 }

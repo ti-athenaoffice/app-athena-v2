@@ -1,0 +1,112 @@
+x-backend-base: &backend-base
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  env_file:
+    - ./backend/.env
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - athena_net
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: athena_db
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-athena}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - athena_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: athena_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - athena_net
+
+  backend:
+    <<: *backend-base
+    container_name: athena_backend
+    ports:
+      - "8000:80"
+
+  queue:
+    <<: *backend-base
+    container_name: athena_queue
+    command:
+      ["php", "/var/www/html/artisan", "queue:work", "--sleep=3", "--tries=3"]
+
+  reverb:
+    <<: *backend-base
+    container_name: athena_reverb
+    command:
+      [
+        "php",
+        "/var/www/html/artisan",
+        "reverb:start",
+        "--host=0.0.0.0",
+        "--port=8080",
+        "--no-interaction",
+      ]
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_REVERB_HOST: ${VITE_REVERB_HOST}
+        VITE_REVERB_PORT: ${VITE_REVERB_PORT}
+        VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME}
+        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY}
+    env_file:
+      - ./frontend/.env
+    container_name: athena_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - athena_net
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  athena_net:
+    driver: bridge

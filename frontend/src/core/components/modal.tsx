@@ -4,6 +4,9 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  Box,
+  Divider,
+  Fade,
   type DialogProps
 } from "@mui/material";
 import { X } from "lucide-react";
@@ -13,6 +16,7 @@ interface ModalProps extends Omit<DialogProps, 'open' | 'onClose'> {
   open: boolean;
   onClose: () => void;
   title?: string;
+  subtitle?: string;
   children: ReactNode;
   actions?: ReactNode;
   maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -24,6 +28,7 @@ export default function Modal({
   open,
   onClose,
   title = "",
+  subtitle,
   children,
   actions,
   maxWidth = 'lg',
@@ -37,37 +42,73 @@ export default function Modal({
       onClose={onClose}
       maxWidth={maxWidth}
       fullWidth={fullWidth}
+      TransitionComponent={Fade} // Transição mais suave que o padrão
+      transitionDuration={400}
       {...props}
       PaperProps={{
-        className: "rounded-2xl border border-slate-200 shadow-xl",
+        sx: {
+          borderRadius: "20px",
+          backgroundImage: "none",
+          boxShadow: "0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)",
+          border: "1px solid",
+          borderColor: "divider",
+        },
         ...props.PaperProps
       }}
     >
       {(title || showCloseButton) && (
-        <DialogTitle className="flex items-center justify-end p-6 pb-4">
-          {title && (
-            <h2 className="text-xl font-bold text-blue-900">{title}</h2>
-          )}
-          {showCloseButton && (
-            <IconButton
-              onClick={onClose}
-              size="small"
-              className="hover:bg-slate-100 transition-colors"
-            >
-              <X size={20} className="text-slate-400" />
-            </IconButton>
-          )}
+        <DialogTitle sx={{ p: 3, pb: subtitle ? 1 : 2 }}>
+          <Box display="flex" alignItems="flex-start" justifyContent="space-between">
+            <Box>
+              {title && (
+                <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="text-sm font-medium text-slate-500 mt-0.5">
+                  {subtitle}
+                </p>
+              )}
+            </Box>
+
+            {showCloseButton && (
+              <IconButton
+                onClick={onClose}
+                size="small"
+                sx={{
+                  color: "text.disabled",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    backgroundColor: "error.lighter", // ou apenas slate-100
+                    color: "error.main",
+                    transform: "rotate(90deg)"
+                  }
+                }}
+              >
+                <X size={20} />
+              </IconButton>
+            )}
+          </Box>
         </DialogTitle>
       )}
 
-      <DialogContent className="px-6 py-0">
-        {children}
+      {/* Divisor opcional para destacar o header */}
+      <Divider sx={{ opacity: 0.6 }} />
+
+      <DialogContent sx={{ p: 3, py: 4 }}>
+        <Box className="text-slate-600">
+          {children}
+        </Box>
       </DialogContent>
 
       {actions && (
-        <DialogActions className="p-6 pt-4">
-          {actions}
-        </DialogActions>
+        <>
+          <Divider sx={{ borderStyle: 'dashed' }} />
+          <DialogActions sx={{ p: 3, backgroundColor: 'rgba(248, 250, 252, 0.5)' }}>
+            {actions}
+          </DialogActions>
+        </>
       )}
     </Dialog>
   );

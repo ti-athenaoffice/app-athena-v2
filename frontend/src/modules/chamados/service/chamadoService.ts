@@ -4,7 +4,7 @@ import type {
   Chamado
 } from "../types/Chamado";
 
-const ENDPOINT = "api/chamados";
+const ENDPOINT = "/chamados";
 
 export interface ChamadosFiltros {
   protocolo?: string;

@@ -3,7 +3,7 @@ import type { Page } from "../../../core/types/Page";
 import type { Usuario } from "../../auth/types/Usuario";
 import type { Funcionario } from "../types/Funcionario";
 
-const ENDPOINT = "api/usuarios";
+const ENDPOINT = "/usuarios";
 
 export const listarUsuarios = async (chamadoId: string, page = 1) => {
   const { data } = await api.get<Page<Usuario>>(`${ENDPOINT}/${chamadoId}/mensagens?page=${page}`);

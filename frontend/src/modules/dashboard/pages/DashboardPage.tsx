@@ -19,7 +19,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Cabeçalho de Boas-vindas */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Olá,  {usuario.nome}! 👋</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Olá,  {usuario?.nome}! 👋</h1>
         <p className="text-sm text-slate-500 font-medium">Veja o que está acontecendo no App Athena hoje.</p>
       </div>
 

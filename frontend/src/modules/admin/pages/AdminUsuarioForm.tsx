@@ -35,7 +35,7 @@ export default function AdminUsuarioForm() {
     formState: { errors },
   } = useForm<FuncionarioFormData>({
     defaultValues: {
-      id: null,
+      id: undefined,
       nome: "",
       email: "",
       senha: "",
@@ -99,7 +99,7 @@ export default function AdminUsuarioForm() {
         </Button>
       </div>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit as any)}
         className="w-full max-w-4xl mx-auto overflow-hidden p-8 space-y-6"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -17,7 +17,7 @@ export const initializeAuth = createAsyncThunk(
   "auth/initialize",
   async () => {
     try {
-      const response = await api.get('/api/user');
+      const response = await api.get('/user');
 
       if (response.status === 200) {
         return {
