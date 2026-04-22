@@ -1,9 +1,18 @@
-# =============================================================================
-# Stage 1: Build
-# =============================================================================
 FROM node:24-alpine AS builder
 
 WORKDIR /app
+
+ARG VITE_API_URL
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+ARG VITE_REVERB_APP_KEY
+
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_REVERB_HOST=$VITE_REVERB_HOST
+ENV VITE_REVERB_PORT=$VITE_REVERB_PORT
+ENV VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+ENV VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY
 
 COPY package.json package-lock.json ./
 
@@ -13,17 +22,12 @@ COPY . .
 
 RUN npm run build
 
-# =============================================================================
-# Stage 2: Production (nginx serve static files)
-# =============================================================================
 FROM nginx:stable-alpine AS production
 
 LABEL description="Frontend React - Node 24"
 
-# Remove config padrão do nginx
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Config nginx para SPA (react-router)
 RUN { \
     echo "server {"; \
     echo "    listen 80;"; \
@@ -46,7 +50,6 @@ RUN { \
     echo "}"; \
 } > /etc/nginx/conf.d/app.conf
 
-# Copia o build do stage anterior
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80

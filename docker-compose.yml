@@ -21,15 +21,15 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-athena}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: app-athena
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app-athena"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -57,39 +57,37 @@ services:
     <<: *backend-base
     container_name: athena_backend
     ports:
-      - "8000:80"
+      - "8080:8080"
 
   queue:
     <<: *backend-base
     container_name: athena_queue
-    command:
-      ["php", "/var/www/html/artisan", "queue:work", "--sleep=3", "--tries=3"]
+    command: ["php", "/var/www/html/artisan", "queue:work", "--sleep=3", "--tries=3"]
 
   reverb:
     <<: *backend-base
     container_name: athena_reverb
-    command:
-      [
-        "php",
-        "/var/www/html/artisan",
-        "reverb:start",
-        "--host=0.0.0.0",
-        "--port=8080",
-        "--no-interaction",
-      ]
+    command: [
+      "php",
+      "/var/www/html/artisan",
+      "reverb:start",
+      "--host=0.0.0.0",
+      "--port=8000",
+      "--no-interaction"
+    ]
     ports:
-      - "8080:8080"
+      - "8000:8000"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_REVERB_HOST: ${VITE_REVERB_HOST}
-        VITE_REVERB_PORT: ${VITE_REVERB_PORT}
-        VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME}
-        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY}
+        VITE_API_URL: http://localhost:8080
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 8000
+        VITE_REVERB_SCHEME: http
+        VITE_REVERB_APP_KEY: 5wtibbsy4zik6dp06c6e
     env_file:
       - ./frontend/.env
     container_name: athena_frontend
@@ -103,9 +101,7 @@ services:
 
 volumes:
   db_data:
-    driver: local
   redis_data:
-    driver: local
 
 networks:
   athena_net:

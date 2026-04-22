@@ -29,12 +29,10 @@ RUN composer install \
 # =============================================================================
 FROM php:8.4-fpm-alpine AS production
 
-# Instala TUDO de uma vez — runtime libs ficam, apenas os -dev são removidos ao final
 RUN apk add --no-cache \
         nginx \
         supervisor \
         curl \
-        # runtime libs (ficam na imagem)
         libpng \
         libjpeg-turbo \
         libwebp \
@@ -80,9 +78,9 @@ COPY --from=vendor /app/vendor ./vendor
 COPY . .
 
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
