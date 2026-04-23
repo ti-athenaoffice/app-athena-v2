@@ -7,6 +7,7 @@ use App\Modules\Auth\Requests\RegisterRequest;
 use App\Modules\Auth\Services\AuthService;
 use App\Modules\Auth\Services\UsuarioService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController
 {
@@ -26,32 +27,30 @@ class AuthController
 
     public function login(LoginRequest $request)
     {
-        try {
-            $dados = $request->validated();
-            $usuario = $this->authService->registrarLogin($dados);
-            $token = $this->authService->gerarToken($usuario);
-            $response = response()->json([
-                'message' => 'Login realizado com sucesso!',
-                'usuario' => $usuario,
-                'access_token' => $token,
-            ]);
-            return $response->cookie(
-                'access_token',
-                $token,
-                60 * 24,
-                '/',
-                null,
-                true,
-                true
-            );
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 401);
+        $dados = $request->validated();
+
+        if (! Auth::attempt([
+            'email' => $dados['email'],
+            'password' => $dados['senha'],
+        ])) {
+            return response()->json(['message' => 'Credenciais inválidas'], 401);
         }
+
+        $request->session()->regenerate();
+
+        return response()->json([
+            'message' => 'Login realizado com sucesso!',
+            'usuario' => Auth::user(),
+        ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Token revogado']);
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Logout realizado com sucesso']);
     }
 }

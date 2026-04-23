@@ -28,7 +28,7 @@ RUN npm run build
 # =============================================================================
 FROM nginx:stable-alpine AS production
 
-LABEL description="Frontend React - Railway"
+LABEL description="Frontend React"
 
 WORKDIR /usr/share/nginx/html
 
@@ -39,7 +39,7 @@ RUN mkdir -p /etc/nginx/templates
 
 RUN printf '%s\n' \
 'server {' \
-'    listen ${PORT};' \
+'    listen __PORT__;' \
 '    server_name _;' \
 '    root /usr/share/nginx/html;' \
 '    index index.html;' \
@@ -60,6 +60,10 @@ RUN printf '%s\n' \
 '        add_header Cache-Control "public, immutable";' \
 '        access_log off;' \
 '    }' \
+'' \
+'    gzip on;' \
+'    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;' \
+'    gzip_min_length 1024;' \
 '}' > /etc/nginx/templates/default.conf.template
 
-CMD ["sh", "-c", "envsubst '$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "PORT_TO_USE=${PORT:-80}; sed \"s/__PORT__/${PORT_TO_USE}/g\" /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

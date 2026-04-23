@@ -36,4 +36,9 @@ class Usuario extends Authenticatable
     {
         return $this->hasMany(Cargo::class);
     }
+
+    public function getAuthPassword()
+    {
+        return $this->senha;
+    }
 }
