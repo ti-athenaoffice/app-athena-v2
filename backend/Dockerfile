@@ -77,7 +77,12 @@ WORKDIR /var/www/html
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
 
-RUN chown -R www-data:www-data /var/www/html \
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    /var/www/html/storage/framework/cache \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/logs \
+    && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
