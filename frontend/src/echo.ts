@@ -1,10 +1,11 @@
+import axios from "axios";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
-import api from "./core/service/api";
 
 const REVERB_HOST = import.meta.env.VITE_REVERB_HOST ?? "localhost";
 const REVERB_PORT = Number(import.meta.env.VITE_REVERB_PORT ?? 443);
 const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME ?? "https";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 declare global {
   interface Window {
@@ -24,10 +25,14 @@ const echo = new Echo({
   enabledTransports: ["ws", "wss"],
   authorizer: (channel) => ({
     authorize: (socketId: string, callback: Function) => {
-      api
-        .post("/broadcasting/auth", {
+      const token = localStorage.getItem("authToken");
+
+      axios
+        .post(`${API_URL}/broadcasting/auth`, {
           socket_id: socketId,
           channel_name: channel.name,
+        }, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         .then((response) => callback(false, response.data))
         .catch((error) => callback(true, error));
