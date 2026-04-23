@@ -16,12 +16,18 @@ const initialState: AuthState = {
 export const initializeAuth = createAsyncThunk(
   "auth/initialize",
   async () => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      return { token: null, isAuthenticated: false };
+    }
+
     try {
       const response = await api.get('/user');
 
       if (response.status === 200) {
         return {
-          token: null,
+          token,
           isAuthenticated: true,
           user: response.data
         };
@@ -39,6 +45,9 @@ export const login = createAsyncThunk(
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       const response: AuthResponse = await processarLogin(credentials);
+      if (response.access_token) {
+        localStorage.setItem("authToken", response.access_token);
+      }
       return response;
     } catch (error: any) {
       console.log(error)
@@ -52,6 +61,7 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await processarLogout();
+      localStorage.removeItem("authToken");
       return null;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Erro ao fazer logout");
@@ -105,6 +115,8 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+        state.token = null;
+        state.usuario = null;
         state.isAuthenticated = false;
       })
       // Logout

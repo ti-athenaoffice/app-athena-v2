@@ -3,26 +3,32 @@ import axios from "axios";
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api";
 
 const api = axios.create({
-    baseURL: API_URL,
-    headers: {
+  baseURL: API_URL,
+  headers: {
     "Content-Type": "application/json",
-    "Accept": "application/json",
-    },
-    withCredentials: true,
-    withXSRFToken: true,
-    xsrfCookieName: "XSRF-TOKEN",
-    xsrfHeaderName: "X-XSRF-TOKEN",
+    Accept: "application/json",
+  },
 });
 
-/**
- * Interceptador de resposta para lidar com erros de autenticação
- */
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("authToken");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else if (config.headers.Authorization) {
+    delete config.headers.Authorization;
+  }
+
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("authToken");
     }
+
     return Promise.reject(error);
   }
 );
