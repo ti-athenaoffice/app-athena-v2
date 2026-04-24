@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
+import type { ReactNode } from "react";
 import {
     Ticket,
     Clock,
@@ -19,8 +20,6 @@ import {
     Mail,
     MoreHorizontal
 } from "lucide-react";
-// Assumindo que você usa react-router-dom ou next/link.
-// Substitua <a> por <Link> do seu roteador, se necessário.
 
 import { useAppSelector } from "../../../core/store/hooks";
 import { selectUser } from "../../../core/store/selectors/authSelectors";
@@ -35,7 +34,7 @@ export default function DashboardPage() {
         return Array.isArray(r) ? r : [r];
     }, [usuario]);
 
-    const hasRole = (...allowed) => {
+    const hasRole = (...allowed: string[]) => {
         if (roles.includes('admin')) return true;
         return allowed.some(role => roles.includes(role));
     };
@@ -324,8 +323,16 @@ export default function DashboardPage() {
     );
 }
 
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: ReactNode;
+    trend?: string;
+    warning?: boolean;
+}
+
 // Sub-componente para os Cards de Estatística (Mantido do original)
-function StatCard({ title, value, icon, trend, warning }) {
+function StatCard({ title, value, icon, trend, warning }: StatCardProps) {
     return (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">

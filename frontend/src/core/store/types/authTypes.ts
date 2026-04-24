@@ -4,6 +4,7 @@ export interface Usuario {
   nome: string;
   setor?: string;
   setores_permitidos?: string[];
+  roles?: string[];
   created_at: Date,
   updated_at: Date
 }

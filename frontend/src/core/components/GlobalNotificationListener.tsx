@@ -4,6 +4,7 @@ import { selectUser, selectIsAuthenticated } from "../store/selectors/authSelect
 import { notifyBrowser, requestNotificationPermission } from "../utils/browserNotification";
 import { ouvirNovoChamado } from "../../modules/chamados/service/chamadosRealTime";
 import echo from "../../echo";
+import type { Chamado } from "../../modules/chamados/types/Chamado";
 
 export default function GlobalNotificationListener() {
   const usuario = useAppSelector(selectUser);
@@ -18,7 +19,7 @@ export default function GlobalNotificationListener() {
   useEffect(() => {
     if (!isAuthenticated || !usuario?.id) return;
 
-    const onNovoChamado = (novoChamado: any) => {
+    const onNovoChamado = (novoChamado: Chamado) => {
       notifyBrowser({
         title: "Novo chamado para seu setor",
         body: novoChamado.titulo ?? "Um novo chamado foi aberto",
@@ -36,7 +37,7 @@ export default function GlobalNotificationListener() {
     };
 
     const onNovaMensagem = (event: any) => {
-      const mensagem = event.mensagem || event;
+      const mensagem = event.mensagem || (event as any);
       const autorId = mensagem.usuario_id || mensagem.user_id || mensagem.autor_id;
       
       if (String(autorId) === String(usuario.id)) return;
@@ -75,12 +76,12 @@ export default function GlobalNotificationListener() {
       });
     };
 
-    const activeChannels: any[] = [];
+    const activeChannels: { stopListening: (event: string, callback?: any) => void }[] = [];
 
     const userChannel = echo.private(`App.Models.User.${usuario.id}`);
     userChannel.notification(onNotification);
     userChannel.listen(".nova.mensagem.chamado", onNovaMensagem);
-    activeChannels.push(userChannel);
+    activeChannels.push(userChannel as any);
 
     const setores = usuario.setores_permitidos?.length ? usuario.setores_permitidos : [usuario.setor];
     
@@ -91,23 +92,20 @@ export default function GlobalNotificationListener() {
 
     setores.filter(Boolean).forEach(setor => {
       const chNovo = ouvirNovoChamado(setor!, onNovoChamado);
-      activeChannels.push(chNovo);
+      activeChannels.push(chNovo as any);
 
       const sectorChannel = echo.private(`chamados.${setor}`);
       sectorChannel.listen(".nova.mensagem.chamado", onNovaMensagem);
-      activeChannels.push(sectorChannel);
+      activeChannels.push(sectorChannel as any);
 
-      // Ouvir mensagens de chats entre este setor e todos os outros
       setoresValidos.forEach(outroSetor => {
-        // Canal onde o setor do usuário é o solicitado (recebendo msg de quem abriu)
         const chMensagensRecebidas = echo.private(`mensagens-chamados.${setor}.${outroSetor}`);
         chMensagensRecebidas.listen(".nova.mensagem.chamado", onNovaMensagem);
-        activeChannels.push(chMensagensRecebidas);
+        activeChannels.push(chMensagensRecebidas as any);
 
-        // Canal onde o setor do usuário é o solicitante (recebendo msg de quem está atendendo)
         const chMensagensEnviadas = echo.private(`mensagens-chamados.${outroSetor}.${setor}`);
         chMensagensEnviadas.listen(".nova.mensagem.chamado", onNovaMensagem);
-        activeChannels.push(chMensagensEnviadas);
+        activeChannels.push(chMensagensEnviadas as any);
       });
     });
 
@@ -116,7 +114,6 @@ export default function GlobalNotificationListener() {
         channel.stopListening(".novo.chamado", onNovoChamado);
         channel.stopListening(".nova.mensagem.chamado", onNovaMensagem);
       });
-      // Importante: Não deixar os canais pendentes
       setores.filter(Boolean).forEach(setor => {
         echo.leave(`chamados.${setor}`);
         setoresValidos.forEach(outroSetor => {
@@ -130,4 +127,3 @@ export default function GlobalNotificationListener() {
 
   return null;
 }
-
