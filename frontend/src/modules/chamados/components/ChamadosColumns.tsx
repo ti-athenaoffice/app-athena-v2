@@ -1,6 +1,6 @@
 import { ArrowLeftRight } from "lucide-react";
 import type { Chamado } from "../types/Chamado";
-import { formatShortDate, formatDateTimeFullBR } from "../../../core/utils/dateUtils";
+import {formatShortDate, formatDateTimeFullBR, formatRelativeTime} from "../../../core/utils/dateUtils";
 import type { Column } from "../../../core/components/table";
 
 export const chamadosColumns: Column<Chamado>[] = [
@@ -86,10 +86,10 @@ export const chamadosColumns: Column<Chamado>[] = [
       return (
           <div className="text-xs">
             <div className="font-medium text-slate-700">
-              {createdAt ? formatDateTimeFullBR(createdAt.toDateString()) : "—"}
+              {createdAt ? formatDateTimeFullBR(createdAt.toString()) : "—"}
             </div>
             <div className="text-slate-500">
-              {createdAt ? formatShortDate(createdAt.toDateString()) : "—"}
+              {createdAt ? formatRelativeTime(createdAt.toString()) : "—"}
             </div>
           </div>
       );

@@ -90,8 +90,6 @@ export default function ChamadoHeader({
       },
     });
   };
-
-  // @ts-ignore
     return (
     <div className="flex justify-between items-start gap-4 pb-4 border-b border-slate-200">
       <div>

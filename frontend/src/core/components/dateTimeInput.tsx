@@ -1,13 +1,12 @@
 import { forwardRef } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker"; // Alterado aqui
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { ptBR } from "@mui/x-date-pickers/locales";
 import { Box, Typography, FormHelperText } from "@mui/material";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/pt-br";
 
-// Configura o dayjs para português
 dayjs.locale("pt-br");
 
 interface DateTimeInputProps {
@@ -43,15 +42,14 @@ export const DateTimeInput = forwardRef<HTMLDivElement, DateTimeInputProps>(
             {label}
           </Typography>
           
-          <DateTimePicker // Alterado de DatePicker para DateTimePicker
+          <DateTimePicker
             ref={ref}
             disabled={disabled}
             value={value ? dayjs(value) : null}
-            ampm={false} // Força o formato 24h (Padrão Brasil)
-            format="DD/MM/YYYY HH:mm" // Formato visível no campo
+            ampm={false}
+            format="DD/MM/YYYY HH:mm"
             onChange={(newValue: Dayjs | null) => {
-              // Envia a string ISO completa para o Laravel
-              onChange(newValue && newValue.isValid() ? newValue.toISOString() : null);
+              onChange(newValue && newValue.isValid() ? newValue.format("YYYY-MM-DD HH:mm:ss") : null);
             }}
             slotProps={{
               textField: {

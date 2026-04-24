@@ -126,33 +126,31 @@ export function useCreateChamado() {
 }
 
 export function useUpdateChamado() {
-  const queryClient = useQueryClient();
+  const updateChamadoInCache = useUpdateChamadoInCache();
   const { mutate, mutateAsync, isPending, error, data } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       editarChamado(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["chamados"] });
-      queryClient.invalidateQueries({ queryKey: ["chamado", variables.id] });
+    onSuccess: (_) => {
+      updateChamadoInCache(_);
     },
   });
   return { mutate, mutateAsync, isPending, error, data };
 }
 
 export function useUpdateStatusChamado() {
-  const queryClient = useQueryClient();
+  const updateChamadoInCache = useUpdateChamadoInCache();
   const { mutate, mutateAsync, isPending, error, data } = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       alterarStatusChamado(id, status),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["chamados"] });
-      queryClient.invalidateQueries({ queryKey: ["chamado", variables.id] });
+    onSuccess: (_) => {
+      updateChamadoInCache(_);
     },
   });
   return { mutate, mutateAsync, isPending, error, data };
 }
 
 export function useUpdateAdicionarPrazoChamado() {
-  const queryClient = useQueryClient();
+  const updateChamadoInCache = useUpdateChamadoInCache();
   const { mutate, mutateAsync, isPending, error, data } = useMutation({
     mutationFn: ({
       id,
@@ -161,9 +159,8 @@ export function useUpdateAdicionarPrazoChamado() {
       id: string;
       prazo_estimado_finalizacao: string;
     }) => adicionarPrazoNoChamado(id, prazo_estimado_finalizacao),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["chamados"] });
-      queryClient.invalidateQueries({ queryKey: ["chamado", variables.id] });
+    onSuccess: (_) => {
+      updateChamadoInCache(_);
     },
   });
 

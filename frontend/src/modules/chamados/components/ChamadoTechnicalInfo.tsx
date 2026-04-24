@@ -93,7 +93,7 @@ export default function ChamadoTechnicalInfo({ chamado }: ChamadoTechnicalInfoPr
       <TechnicalInfoItem icon={Building2} label="Setor Origem" value={chamado.setor_solicitante} />
       <TechnicalInfoItem icon={ArrowRight} label="Setor Destino" value={chamado.setor_solicitado} />
       <TechnicalInfoItem icon={UserCogIcon} label="Alvo da Solicitação" value={chamado.nome_funcionario_requisitado || "Nenhum"} />
-      <TechnicalInfoItem icon={UserCheck} label="Técnico Responsável" value={chamado.nome_funcionario_responsavel || "Aguardando Atribuição"} />
+      <TechnicalInfoItem icon={UserCheck} label="Responsável" value={chamado.nome_funcionario_responsavel || "Aguardando Atribuição"} />
 
       <div className="pt-4 mt-4 border-t border-slate-50 space-y-4">
         <SectionTitle title="Cronograma" />
