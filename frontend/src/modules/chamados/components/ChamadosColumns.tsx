@@ -1,6 +1,6 @@
 import { ArrowLeftRight } from "lucide-react";
 import type { Chamado } from "../types/Chamado";
-import {formatShortDate, formatDateTimeFullBR, formatRelativeTime} from "../../../core/utils/dateUtils";
+import { formatDateTimeFullBR, formatRelativeTime} from "../../../core/utils/dateUtils";
 import type { Column } from "../../../core/components/table";
 
 export const chamadosColumns: Column<Chamado>[] = [
