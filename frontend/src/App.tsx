@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { useAppDispatch } from "./core/store/hooks";
 import { initializeAuth } from "./core/store/slices/authSlice";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import GlobalNotificationListener from "./core/components/GlobalNotificationListener";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -17,6 +18,7 @@ function App() {
   return (
     <>
       <QueryClientProvider client={queryClient}>
+        <GlobalNotificationListener />
         <Toaster
           position="top-right"
           toastOptions={{

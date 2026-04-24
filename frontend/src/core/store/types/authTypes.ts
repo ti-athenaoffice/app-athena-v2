@@ -3,6 +3,7 @@ export interface Usuario {
   email: string;
   nome: string;
   setor?: string;
+  setores_permitidos?: string[];
   created_at: Date,
   updated_at: Date
 }

@@ -42,7 +42,7 @@ export default function Modal({
       onClose={onClose}
       maxWidth={maxWidth}
       fullWidth={fullWidth}
-      TransitionComponent={Fade} // Transição mais suave que o padrão
+      TransitionComponent={Fade}
       transitionDuration={400}
       {...props}
       PaperProps={{
@@ -80,7 +80,7 @@ export default function Modal({
                   color: "text.disabled",
                   transition: "all 0.2s",
                   "&:hover": {
-                    backgroundColor: "error.lighter", // ou apenas slate-100
+                    backgroundColor: "error.lighter",
                     color: "error.main",
                     transform: "rotate(90deg)"
                   }

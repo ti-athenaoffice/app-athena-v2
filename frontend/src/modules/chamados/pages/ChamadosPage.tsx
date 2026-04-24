@@ -18,13 +18,11 @@ import type { ChamadosFiltros } from "../service/chamadoService";
 import {
   ouvirChamadoAtualizado, ouvirChamadoDeletado,
   ouvirNovoChamado,
-  pararDeOuvirChamados
 } from "../service/chamadosRealTime";
 import { selectUser } from "../../../core/store/selectors/authSelectors";
 import { useAppSelector } from "../../../core/store/hooks";
 import toast from "react-hot-toast";
 import type { Chamado } from "../types/Chamado";
-import {notifyBrowser} from "../../../core/utils/browserNotification.ts";
 
 export default function ChamadosPage() {
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -87,47 +85,36 @@ export default function ChamadosPage() {
 
   useEffect(() => {
     if (!usuario?.setor) return;
-    const channel = ouvirNovoChamado(usuario.setor, (novoChamado) => {
+    const onNovoChamado = (novoChamado: Chamado) => {
       const chamadoCompleto: Chamado = {
         ...novoChamado,
         id: String(novoChamado.id),
       };
-      notifyBrowser({
-        title: "Novo chamado para seu setor",
-        body: novoChamado.titulo ?? "Nova mensagem recebida",
-        tag: `chamado-${novoChamado.id}`,
-        renotify: true,
-        icon: "/logo-athena-white.png",
-        badge: "/logo-athena-white.png",
-        requireInteraction: false,
-        preventWhenVisible: false,
-        onClick: (_event, notification) => {
-          window.focus();
-          notification.close();
-        },
-      });
       addChamadoInCache(chamadoCompleto);
-    });
+    };
 
-    const channelEdit = ouvirChamadoAtualizado(usuario.setor, (chamadoAtualizado) => {
+    const onChamadoAtualizado = (chamadoAtualizado: Chamado) => {
       const chamadoCompleto: Chamado = {
         ...chamadoAtualizado,
         id: String(chamadoAtualizado.id),
       };
       toast.success(`Chamado atualizado: ${chamadoCompleto.titulo}`);
       updateChamadoInCache(chamadoCompleto);
-    });
+    };
 
-    const channelDelete = ouvirChamadoDeletado(usuario.setor, (event) => {
+    const onChamadoDeletado = (event: any) => {
       const id = String(event.chamadoId);
       deleteChamadoInCache(id);
-    });
+    };
+
+    const channel = ouvirNovoChamado(usuario.setor, onNovoChamado);
+    const channelEdit = ouvirChamadoAtualizado(usuario.setor, onChamadoAtualizado);
+    const channelDelete = ouvirChamadoDeletado(usuario.setor, onChamadoDeletado);
 
     return () => {
-      pararDeOuvirChamados(usuario.setor ?? '');
-      channel.stopListening(".novo.chamado");
-      channelEdit.stopListening(".editar.chamado");
-      channelDelete.stopListening(".apagar.chamado");
+      channel.stopListening(".novo.chamado", onNovoChamado);
+      channelEdit.stopListening(".editar.chamado", onChamadoAtualizado);
+      channelDelete.stopListening(".apagar.chamado", onChamadoDeletado);
     };
   }, [usuario?.setor, queryClient]);
 

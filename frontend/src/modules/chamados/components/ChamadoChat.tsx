@@ -15,7 +15,6 @@ import { Alert } from "@mui/material";
 import type { Chamado } from "../types/Chamado";
 import {ouvirNovaMensagemChamado} from "../service/mensagemRealTime.ts";
 import {ordenarMensagens, scrollToBottom} from "../utils/utils.ts";
-import {notifyBrowser} from "../../../core/utils/browserNotification.ts";
 
 interface ChamadoChatProps {
   chamado: Chamado;
@@ -74,38 +73,25 @@ export default function ChamadoChat({ usuario, chamado }: ChamadoChatProps) {
   };
 
   useEffect(() => {
+    const onNovaMensagem = (mensagem: any) => {
+      addMensagemChamadoInCache(chamado.id, mensagem.mensagem);
+
+      const autorDaMensagem = String(mensagem.mensagem.usuario_id);
+      const meuUsuarioId = String(usuario?.id);
+
+      if (autorDaMensagem === meuUsuarioId) {
+        return;
+      }
+    };
+
     const channel = ouvirNovaMensagemChamado(
         chamado.setor_solicitante,
         chamado.setor_solicitado,
-        (mensagem) => {
-          addMensagemChamadoInCache(chamado.id, mensagem.mensagem);
-
-          const autorDaMensagem = String(mensagem.mensagem.usuario_id);
-          const meuUsuarioId = String(usuario?.id);
-
-          if (autorDaMensagem === meuUsuarioId) {
-            return;
-          }
-
-          notifyBrowser({
-            title: "Nova mensagem recebida no chamado " + `#${chamado.id}`,
-            body: mensagem.mensagem.descricao ?? "Nova mensagem recebida",
-            tag: `chamado-${chamado.id}`,
-            renotify: true,
-            icon: "/logo-athena-white.png",
-            badge: "/logo-athena-white.png",
-            requireInteraction: false,
-            preventWhenVisible: false,
-            onClick: (_event, notification) => {
-              window.focus();
-              notification.close();
-            },
-          });
-        }
+        onNovaMensagem
     );
 
     return () => {
-      channel.stopListening(".nova.mensagem.chamado");
+      channel.stopListening(".nova.mensagem.chamado", onNovaMensagem);
     };
   }, [chamado.id, chamado.setor_solicitante, chamado.setor_solicitado, usuario?.id, addMensagemChamadoInCache]);
 

@@ -38,7 +38,7 @@ export default function AdminUsuarioDetalhes({
   };
 
   return (
-    <div className="flex justify-between items-start gap-4 pb-4 border-b border-slate-200">
+    <div className="flex justify-between items-start gap-4 pb-4">
       <div>
         <div className="flex items-center gap-2 text-slate-500 mb-1">
           <span className="font-mono text-sm bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
