@@ -122,7 +122,7 @@ export default function AppLayout() {
 
         {/* Conteúdo Dinâmico */}
         <main className="flex-1 overflow-y-auto p-8 bg-slate-50">
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-[1500px]">
             <Outlet />
           </div>
         </main>

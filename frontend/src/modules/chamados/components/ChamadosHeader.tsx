@@ -1,4 +1,4 @@
-import { LayoutList, LayoutGrid, Plus } from "lucide-react";
+import {LayoutList, LayoutGrid, Plus, Ticket} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../core/components/button";
 
@@ -13,8 +13,15 @@ export default function ChamadosHeader({ viewMode, onChangeViewMode }: ChamadosH
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Central de Chamados</h1>
-        <p className="text-sm text-slate-500 font-medium">
+        <div className="flex items-center gap-2">
+          <Ticket className="h-6 w-6 text-blue-900" />
+
+          <h1 className="text-2xl font-bold text-slate-800">
+            Central de Chamados
+          </h1>
+        </div>
+
+        <p className="mt-1 text-sm font-medium text-slate-500">
           Gerenciamento de solicitações internas da empresa
         </p>
       </div>

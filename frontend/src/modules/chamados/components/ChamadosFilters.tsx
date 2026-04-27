@@ -62,7 +62,6 @@ export default function ChamadosFilters({
       <div>
         <Select
           label="Chamados"
-          placeholder="Todos"
           options={getVisualizarOptions()}
           value={filtros.visualizar ?? "PARA_MEU_SETOR"}
           onChange={(e) => onChange("visualizar", e?.target?.value)}

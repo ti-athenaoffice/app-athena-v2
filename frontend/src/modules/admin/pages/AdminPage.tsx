@@ -1,19 +1,19 @@
-import { Plus } from "lucide-react";
-import Button from "../../../core/components/button";
 import { Table, type Column } from "../../../core/components/table";
 import { useUsuarios } from "../hooks/useUsuario";
 import { AdminUsuariosColumns } from "./AdminUsuarioColumns";
-import { useNavigate } from "react-router-dom";
 import Modal from "../../../core/components/modal";
 import AdminUsuarioDetalhes from "./AdminUsuarioDetalhes";
 import { useState } from "react"; 
 import type { Funcionario } from "../types/Funcionario";
+import {Paginacao} from "../../../core/components/paginacao.tsx";
+import UsuariosFilters from "../components/UsuarioFiltros.tsx";
+import UsuariosHeader from "../components/UsuarioHeader.tsx";
 
 export default function AdminPage() {
-  const { data: usuarios, isFetching } = useUsuarios();
-  const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [usuarioSelecionado, setUsuarioSelecionado] = useState<Funcionario | null>(null);
+    const [page, setPage] = useState(1);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [usuarioSelecionado, setUsuarioSelecionado] = useState<Funcionario | null>(null);
+    const { data: usuarios, isFetching } = useUsuarios(page);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -26,26 +26,48 @@ export default function AdminPage() {
   };
 
   const columns = AdminUsuariosColumns as unknown as Column<{ id: string | number }>[];
-  const data = (usuarios?.data ?? []) as unknown as { id: string | number }[];
+    const [filtros, setFiltros] = useState<[]>({
+        nome: "",
+        setor: "",
+        status: "",
+        role: "",
+    });
 
+    const handleChangeFiltro = (
+        field: keyof Array,
+        value: unknown
+    ) => {
+        setFiltros((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
   return (
-    <>
-      <div className="w-full flex justify-end py-6">
-        <Button
-          variant="contained"
-          startIcon={<Plus size={18} />}
-          onClick={() => navigate("/admin/usuario/novo")}
-        >
-          Novo Usuário
-        </Button>
-      </div>
-      <Table
-        columns={columns}
-        data={data}
-        onRowClick={handleRowClick}
-        isLoading={isFetching}
-        emptyMessage="Nenhum chamado encontrado."
-      />
+      <div className="space-y-6">
+        <UsuariosHeader />
+        <UsuariosFilters
+            filtros={filtros}
+            onChange={handleChangeFiltro}
+            onClear={() =>
+                setFiltros({
+                    nome: "",
+                    setor: "",
+                    status: "",
+                    role: "",
+                })
+            }
+        />
+        <Table
+            columns={columns}
+            data={usuarios?.data ?? []}
+            onRowClick={handleRowClick}
+            isLoading={isFetching}
+            emptyMessage="Nenhum chamado encontrado."
+        />
+        <Paginacao
+            meta={usuarios}
+            onPageChange={(newPage) => setPage(newPage)}
+        />
 
       <Modal open={isModalOpen} onClose={handleCloseModal}>
         {usuarioSelecionado && (
@@ -55,6 +77,6 @@ export default function AdminPage() {
           />
         )}
       </Modal>
-    </>
+    </div>
   );
 }

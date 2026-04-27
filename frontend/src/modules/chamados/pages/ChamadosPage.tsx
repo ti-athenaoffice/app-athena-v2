@@ -23,6 +23,7 @@ import { selectUser } from "../../../core/store/selectors/authSelectors";
 import { useAppSelector } from "../../../core/store/hooks";
 import toast from "react-hot-toast";
 import type { Chamado } from "../types/Chamado";
+import {Paginacao} from "../../../core/components/paginacao.tsx";
 
 export default function ChamadosPage() {
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
@@ -38,7 +39,7 @@ export default function ChamadosPage() {
   const [filtros, setFiltros] = useState<ChamadosFiltros>({
     protocolo: "",
     status: "",
-    visualizar: "",
+    visualizar: "PARA_MEU_SETOR",
     prioridade: "",
   });
 
@@ -78,7 +79,7 @@ export default function ChamadosPage() {
     setFiltros({
       protocolo: "",
       status: "",
-      visualizar: "",
+      visualizar: "PARA_MEU_SETOR",
       prioridade: "",
     });
   };
@@ -152,13 +153,20 @@ export default function ChamadosPage() {
         />
 
         {viewMode === "list" ? (
-            <Table
-                columns={chamadosColumns}
-                data={chamados?.data ?? []}
-                onRowClick={handleRowClick}
-                isLoading={isFetching || isLoading}
-                emptyMessage="Nenhum chamado encontrado."
-            />
+            <>
+              <Table
+                  columns={chamadosColumns}
+                  data={chamados?.data ?? []}
+                  onRowClick={handleRowClick}
+                  isLoading={isFetching || isLoading}
+                  emptyMessage="Nenhum chamado encontrado."
+              />
+              <Paginacao
+                  meta={chamados}
+                  onPageChange={(newPage) => setPage(newPage)}
+              />
+            </>
+
         ) : (
             <ChamadosKanban
                 data={chamados?.data ?? []}

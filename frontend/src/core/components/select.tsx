@@ -45,8 +45,8 @@ const Select = forwardRef<HTMLSelectElement, BaseSelectProps>(
             {...props}
           >
             {placeholder && (
-              <MenuItem value="" disabled>
-                <span className="text-slate-400">{placeholder}</span>
+              <MenuItem value="">
+                <span className="text-gray-800">{placeholder}</span>
               </MenuItem>
             )}
             {options.map((option) => (

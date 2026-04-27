@@ -91,7 +91,7 @@ export default function AdminUsuarioForm() {
     <>
       <div className="flex items-center justify-between gap-4">
         <Button
-          variant="text"
+          variant="outlined"
           onClick={() => navigate("/admin")}
           startIcon={<ArrowLeft size={20} />}
         >

@@ -5,7 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { useAppDispatch } from "./core/store/hooks";
 import { initializeAuth } from "./core/store/slices/authSlice";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import GlobalNotificationListener from "./core/components/GlobalNotificationListener";
+import GlobalNotificationListener from "./core/context/GlobalNotificationListener.tsx";
 
 function App() {
   const dispatch = useAppDispatch();
