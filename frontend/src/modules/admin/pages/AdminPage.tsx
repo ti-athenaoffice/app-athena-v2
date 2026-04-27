@@ -18,7 +18,7 @@ export default function AdminPage() {
         nome: "",
         setor: "",
     });
-    const { data: usuarios, isFetching } = useUsuarios(page, filtros);
+    const { data: usuarios, isFetching, isLoading } = useUsuarios(page, filtros);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -30,7 +30,7 @@ export default function AdminPage() {
         setUsuarioSelecionado(item);
     };
 
-    const columns = AdminUsuariosColumns as unknown as Column<{ id: string | number }>[];
+    const columns = AdminUsuariosColumns as unknown as Column<any>[];
 
     const handleChangeFiltro = (
         field: string,
@@ -64,8 +64,8 @@ export default function AdminPage() {
             columns={columns}
             data={usuarios?.data ?? []}
             onRowClick={handleRowClick}
-            isLoading={isFetching}
-            emptyMessage="Nenhum chamado encontrado."
+            isLoading={isLoading || isFetching}
+            emptyMessage="Nenhum usuário encontrado."
         />
         <Paginacao
             meta={usuarios}
