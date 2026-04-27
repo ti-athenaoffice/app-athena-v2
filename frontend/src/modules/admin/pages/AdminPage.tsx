@@ -26,7 +26,7 @@ export default function AdminPage() {
   };
 
   const columns = AdminUsuariosColumns as unknown as Column<{ id: string | number }>[];
-    const [filtros, setFiltros] = useState<[]>({
+    const [filtros, setFiltros] = useState<any>({
         nome: "",
         setor: "",
         status: "",
@@ -34,10 +34,10 @@ export default function AdminPage() {
     });
 
     const handleChangeFiltro = (
-        field: keyof Array,
+        field: keyof any,
         value: unknown
     ) => {
-        setFiltros((prev) => ({
+        setFiltros((prev: []) => ({
             ...prev,
             [field]: value,
         }));
