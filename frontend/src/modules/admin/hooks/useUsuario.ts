@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { listarUsuarios } from "../../auth/service/usuarioService";
 import { apagarUsuario, criarUsuario, editarUsuario } from "../service/api";
 
-export function useUsuarios(page = 1) {
+export function useUsuarios(page = 1, filters: any = {}) {
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["usuarios", page],
+    queryKey: ["usuarios", page, filters],
     staleTime: Infinity,
-    queryFn: () => listarUsuarios(page),
+    queryFn: () => listarUsuarios(page, filters),
   });
   return { data, isLoading, isFetching, error };
 }

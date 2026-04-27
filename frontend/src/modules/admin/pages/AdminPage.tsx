@@ -13,49 +13,52 @@ export default function AdminPage() {
     const [page, setPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [usuarioSelecionado, setUsuarioSelecionado] = useState<Funcionario | null>(null);
-    const { data: usuarios, isFetching } = useUsuarios(page);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setUsuarioSelecionado(null);
-  };
-
-  const handleRowClick = (item: any) => {
-    setIsModalOpen(true);
-    setUsuarioSelecionado(item);
-  };
-
-  const columns = AdminUsuariosColumns as unknown as Column<{ id: string | number }>[];
+    const [nomeInput, setNomeInput] = useState("");
     const [filtros, setFiltros] = useState<any>({
         nome: "",
         setor: "",
-        status: "",
-        role: "",
     });
+    const { data: usuarios, isFetching } = useUsuarios(page, filtros);
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setUsuarioSelecionado(null);
+    };
+
+    const handleRowClick = (item: any) => {
+        setIsModalOpen(true);
+        setUsuarioSelecionado(item);
+    };
+
+    const columns = AdminUsuariosColumns as unknown as Column<{ id: string | number }>[];
 
     const handleChangeFiltro = (
-        field: keyof any,
+        field: string,
         value: unknown
     ) => {
-        setFiltros((prev: []) => ({
+        setFiltros((prev: any) => ({
             ...prev,
             [field]: value,
         }));
+        setPage(1);
     };
   return (
       <div className="space-y-6">
         <UsuariosHeader />
         <UsuariosFilters
             filtros={filtros}
+            nomeInput={nomeInput}
+            onNomeInputChange={setNomeInput}
+            onSearch={() => handleChangeFiltro("nome", nomeInput)}
             onChange={handleChangeFiltro}
-            onClear={() =>
+            onClear={() => {
+                setNomeInput("");
                 setFiltros({
                     nome: "",
                     setor: "",
-                    status: "",
-                    role: "",
-                })
-            }
+                });
+                setPage(1);
+            }}
         />
         <Table
             columns={columns}

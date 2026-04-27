@@ -166,7 +166,7 @@ export default function GlobalNotificationListener() {
     const onMensagem = (event: any) => notificarNovaMensagem(event, usuario.id);
 
     // Canal pessoal do usuário (notificações gerais + mensagens diretas)
-    const canalUsuario = ouvirCanalDoUsuario(usuario.id, {
+    const canalUsuario = ouvirCanalDoUsuario(Number(usuario.id), {
       onMensagem,
       onNotificacao: notificarNotificacaoGenerica,
     });

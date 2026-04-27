@@ -8,9 +8,15 @@ use Illuminate\Support\Facades\Hash;
 
 class UsuarioService
 {
-    public function listarUsuarios(int $perPage = 20): LengthAwarePaginator
+    public function listarUsuarios(array $filtros, int $perPage = 20): LengthAwarePaginator
     {
         return Usuario::query()
+            ->when($filtros['nome'] ?? null, function ($query, $filtrosetor) {
+                $query->where('nome', 'ilike', "%{$filtrosetor}%");
+            })
+            ->when($filtros['setor'] ?? null, function ($query, $filtrosetor) {
+                $query->where('setor', $filtrosetor);
+            })
             ->paginate($perPage);
     }
 

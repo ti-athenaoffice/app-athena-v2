@@ -4,15 +4,17 @@ namespace App\Modules\Auth\Controllers;
 
 use App\Modules\Auth\Requests\CriarUsuarioRequest;
 use App\Modules\Auth\Requests\EditarUsuarioRequest;
+use App\Modules\Auth\Requests\ListarUsuarioRequest;
 use App\Modules\Auth\Services\UsuarioService;
 
 class UsuarioController
 {
     public function __construct(private UsuarioService $usuarioService) {}
 
-    public function listarUsuarios()
+    public function listarUsuarios(ListarUsuarioRequest $request)
     {
-        return $this->usuarioService->listarUsuarios();
+        $dados = $request->validated();
+        return $this->usuarioService->listarUsuarios($dados);
     }
 
     public function criarUsuario(CriarUsuarioRequest $request)
@@ -21,7 +23,7 @@ class UsuarioController
         return $this->usuarioService->criarUsuario($dados);
     }
 
-    public function editarUsuario(EditarUsuarioRequest $request, int $id) 
+    public function editarUsuario(EditarUsuarioRequest $request, int $id)
     {
         $dados = $request->validated();
         return $this->usuarioService->editarUsuario($id, $dados);

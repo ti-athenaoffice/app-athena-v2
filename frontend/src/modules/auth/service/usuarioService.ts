@@ -4,7 +4,11 @@ import type { Usuario } from "../types/Usuario";
 
 const ENDPOINT = "/usuarios";
 
-export const listarUsuarios = async (page = 1) => {
-  const { data } = await api.get<Page<Usuario>>(`${ENDPOINT}?page=${page}`);
+export const listarUsuarios = async (page = 1, filters: any = {}) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    ...filters
+  });
+  const { data } = await api.get<Page<Usuario>>(`${ENDPOINT}?${params.toString()}`);
   return data; 
 };
