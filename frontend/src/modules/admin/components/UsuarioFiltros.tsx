@@ -6,7 +6,7 @@ import {getSetoresOptions} from "../../../core/utils/selectOptions.ts";
 
 interface UsuariosFiltersProps {
     filtros: any;
-    onChange: (field: keyof [], value: unknown) => void;
+    onChange: (field: string, value: unknown) => void;
     onClear: () => void;
 }
 

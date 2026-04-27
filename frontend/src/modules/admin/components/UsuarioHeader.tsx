@@ -1,14 +1,10 @@
-import { LayoutGrid, LayoutList, Plus, Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../core/components/button";
 
-interface UsuariosHeaderProps {
-    viewMode?: "list" | "grid";
-    onChangeViewMode?: (mode: "list" | "grid") => void;
-}
 
-export default function UsuariosHeader({
-                           }: UsuariosHeaderProps) {
+
+export default function UsuariosHeader() {
     const navigate = useNavigate();
 
     return (
