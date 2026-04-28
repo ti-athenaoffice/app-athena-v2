@@ -5,13 +5,6 @@ import { notifyBrowser, requestNotificationPermission } from "../utils/browserNo
 import { ouvirNovoChamado, ouvirChamadoAtualizado } from "../../modules/chamados/service/chamadosRealTime.ts";
 import echo from "../../echo.ts";
 import type { Chamado } from "../../modules/chamados/types/Chamado.ts";
-
-// Lista fixa de todos os setores que existem no sistema
-const SETORES_DO_SISTEMA = [
-  'TI', 'RH', 'MARKETING', 'JURIDICO', 'FINANCEIRO',
-  'ADMINISTRATIVO', 'COMERCIAL', 'CONTABILIDADE', 'SECRETARIA'
-];
-
 // ─── Funções que criam notificações ──────────────────────────────────────────
 // Cada função sabe exatamente qual mensagem mostrar para cada evento.
 

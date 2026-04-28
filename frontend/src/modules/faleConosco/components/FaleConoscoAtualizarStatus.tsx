@@ -28,11 +28,7 @@ export default function FaleConoscoAtualizarStatus({
     });
 
     const onSubmit = (data: FaleConosco) => {
-        onUpdate?.({
-            id: contato.id,
-            ...data,
-        });
-
+        onUpdate?.(data);
         setIsEditModalOpen(false);
     };
 

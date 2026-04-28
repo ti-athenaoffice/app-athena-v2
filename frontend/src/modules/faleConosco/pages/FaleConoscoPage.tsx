@@ -7,6 +7,7 @@ import { faleConoscoColumns } from "../components/FaleConoscoColumns";
 import Modal from "../../../core/components/modal";
 import FaleConoscoDetalhes from "../components/FaleConoscoDetalhes";
 import type { FaleConosco } from "../types/FaleConosco";
+import FaleConoscoHeader from "../components/FaleConoscoHeader.tsx";
 
 export default function FaleConoscoPage() {
     const [page, setPage] = useState(1);
@@ -54,6 +55,8 @@ export default function FaleConoscoPage() {
 
     return (
         <div className="space-y-6">
+            <FaleConoscoHeader />
+
             <FaleConoscoFilters
                 filtros={filtros}
                 empresaInput={empresaInput}
