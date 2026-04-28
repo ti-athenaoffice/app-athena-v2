@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppSelector } from "../store/hooks.ts";
 import { selectUser, selectIsAuthenticated } from "../store/selectors/authSelectors.ts";
 import { notifyBrowser, requestNotificationPermission } from "../utils/browserNotification.ts";
@@ -123,26 +123,15 @@ function ouvirCanaisDoSetor(setor: string, callbacks: {
   canalSetor.listen(".nova.mensagem.chamado", callbacks.onMensagem);
   canaisAbertos.push(canalSetor);
 
-  // Ouve mensagens trocadas entre esse setor e qualquer outro setor do sistema
-  SETORES_DO_SISTEMA.forEach((outroSetor) => {
-    const canalEnviadas = echo.private(`mensagens-chamados.${setor}.${outroSetor}`);
-    canalEnviadas.listen(".nova.mensagem.chamado", callbacks.onMensagem);
-    canaisAbertos.push(canalEnviadas);
-
-    const canalRecebidas = echo.private(`mensagens-chamados.${outroSetor}.${setor}`);
-    canalRecebidas.listen(".nova.mensagem.chamado", callbacks.onMensagem);
-    canaisAbertos.push(canalRecebidas);
-  });
+  // Removida a inscrição automática em todos os canais de mensagens cruzadas (SETORES_DO_SISTEMA)
+  // para reduzir chamadas desnecessárias a /broadcasting/auth.
+  // Essas mensagens devem ser ouvidas apenas se o usuário estiver na tela de chat específica.
 
   return canaisAbertos;
 }
 
 function sairDosCanaisDoSetor(setor: string) {
   echo.leave(`chamados.${setor}`);
-  SETORES_DO_SISTEMA.forEach((outroSetor) => {
-    echo.leave(`mensagens-chamados.${setor}.${outroSetor}`);
-    echo.leave(`mensagens-chamados.${outroSetor}.${setor}`);
-  });
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -150,11 +139,15 @@ function sairDosCanaisDoSetor(setor: string) {
 export default function GlobalNotificationListener() {
   const usuario = useAppSelector(selectUser);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const lastAuthStatus = useRef<boolean>(false);
 
   // Pede permissão para notificações assim que o usuário faz login
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !lastAuthStatus.current) {
       requestNotificationPermission();
+      lastAuthStatus.current = true;
+    } else if (!isAuthenticated) {
+      lastAuthStatus.current = false;
     }
   }, [isAuthenticated]);
 
@@ -201,7 +194,7 @@ export default function GlobalNotificationListener() {
         canal.stopListening?.(".editar.chamado");
       });
     };
-  }, [isAuthenticated, usuario?.id, usuario?.setor, usuario?.setores_permitidos]);
+  }, [isAuthenticated, usuario?.id, usuario?.setor, JSON.stringify(usuario?.setores_permitidos)]);
 
   return null;
 }

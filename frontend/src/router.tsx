@@ -8,6 +8,7 @@ import LoginPage from "./modules/auth/pages/LoginPage";
 import PerfilPage from "./modules/auth/pages/PerfilPage";
 import AdminPage from "./modules/admin/pages/AdminPage";
 import AdminUsuarioForm from "./modules/admin/pages/AdminUsuarioForm";
+import FaleConoscoPage from "./modules/faleConosco/pages/FaleConoscoPage.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: <DashboardPage />,
       },
+
       {
         path: "chamados",
         element: <ChamadosPage />,
@@ -42,6 +44,7 @@ export const router = createBrowserRouter([
         path: "chamados/editar/:id",
         element: <ChamadosForm />,
       },
+
       {
         path: "admin",
         element: <AdminPage />
@@ -54,6 +57,12 @@ export const router = createBrowserRouter([
         path: "admin/usuario/editar/:id",
         element: <AdminUsuarioForm />
       },
+
+      {
+        path: "fale-conosco",
+        element: <FaleConoscoPage />
+      },
+
       {
         path: "configuracoes",
         element: <PerfilPage />,

@@ -4,7 +4,7 @@ import {
   Users,
   LogOut,
   ChevronRight,
-  Settings,
+  Settings, Speech,
 } from "lucide-react";
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -14,21 +14,19 @@ import { selectUser } from "../store/selectors/authSelectors";
 import { obterIconPerfil } from "../utils";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Ticket, label: "Chamados", path: "/chamados" },
-  { icon: Users, label: "Administração", path: "/admin" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", key: "dashboard" },
+  { icon: Ticket, label: "Chamados", path: "/chamados", key: "chamados" },
+  { icon: Speech, label: "Fale Conosco", path: "/fale-conosco", key: "faleConosco" },
+  { icon: Users, label: "Administração", path: "/admin", key: "admin" },
 ];
 
 const getPageTitle = (pathname: string): string => {
   const segments = pathname.split("/").filter(Boolean);
   const page = segments[0];
-  const titles: { [key: string]: string } = {
-    dashboard: "Dashboard",
-    chamados: "Chamados",
-    admin: "Administração",
-    config: "Configurações",
-  };
-  return titles[page] || "App Athena";
+
+  const item = menuItems.find((item) => item.path.replace("/", "") === page);
+
+  return item?.label || "App Athena";
 };
 
 export default function AppLayout() {
