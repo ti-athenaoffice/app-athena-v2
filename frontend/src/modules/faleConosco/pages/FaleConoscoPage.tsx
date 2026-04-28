@@ -63,7 +63,7 @@ export default function FaleConoscoPage() {
                 onClear={handleClearFilters}
             />
 
-            <Table
+            <Table<FaleConosco>
                 columns={faleConoscoColumns}
                 data={faleConosco?.data ?? []}
                 isLoading={isFetching || isLoading}
