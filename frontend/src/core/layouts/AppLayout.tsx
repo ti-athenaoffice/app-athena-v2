@@ -4,7 +4,7 @@ import {
   Users,
   LogOut,
   ChevronRight,
-  Settings, Speech,
+  Settings, Speech, FilePen,
 } from "lucide-react";
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -14,10 +14,41 @@ import { selectUser } from "../store/selectors/authSelectors";
 import { obterIconPerfil } from "../utils";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", key: "dashboard" },
-  { icon: Ticket, label: "Chamados", path: "/chamados", key: "chamados" },
-  { icon: Speech, label: "Fale Conosco", path: "/fale-conosco", key: "faleConosco" },
-  { icon: Users, label: "Administração", path: "/admin", key: "admin" },
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    path: "/dashboard",
+    key: "dashboard",
+    permission: null,
+  },
+  {
+    icon: Ticket,
+    label: "Chamados",
+    path: "/chamados",
+    key: "chamados",
+    permission: "chamado.listar",
+  },
+  {
+    icon: Speech,
+    label: "Fale Conosco",
+    path: "/fale-conosco",
+    key: "faleConosco",
+    permission: "fale_conosco.listar",
+  },
+  {
+    icon: FilePen,
+    label: "Assinaturas",
+    path: "/assinaturas",
+    key: "assinaturas",
+    permission: "assinatura.listar",
+  },
+  {
+    icon: Users,
+    label: "Administração",
+    path: "/admin",
+    key: "admin",
+    permission: "usuario.listar",
+  },
 ];
 
 const getPageTitle = (pathname: string): string => {
@@ -40,6 +71,17 @@ export default function AppLayout() {
     await processarLogout();
     navigate("/login");
   }
+
+  const permissoesUsuario: any =
+      usuario?.roles?.flatMap((role: any) =>
+          role.permissions?.map((permission: any) => permission.name) ?? []
+      ) ?? [];
+
+  const menuItemsPermitidos = menuItems.filter((item) => {
+    if (!item.permission) return true;
+
+    return permissoesUsuario.includes(item.permission);
+  });
 
   return (
     <div className="flex h-screen w-screen bg-slate-50 overflow-hidden font-sans">
@@ -65,7 +107,7 @@ export default function AppLayout() {
 
         {/* Links de Navegação */}
         <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
-          {menuItems.map((item) => (
+          {menuItemsPermitidos.map((item) => (
             <NavItem
               key={item.path}
               icon={<item.icon size={22} />}

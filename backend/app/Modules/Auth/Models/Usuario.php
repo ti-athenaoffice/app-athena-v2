@@ -10,14 +10,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['nome', 'email', 'senha', 'setor'])]
 #[Hidden(['senha', 'remember_token'])]
 class Usuario extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
-
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
     /**
      * Get the attributes that should be cast.
      *
@@ -30,11 +30,6 @@ class Usuario extends Authenticatable
             'senha' => 'hashed',
             'setor' => Setores::class
         ];
-    }
-
-    public function cargos()
-    {
-        return $this->hasMany(Cargo::class);
     }
 
     public function getAuthPassword()

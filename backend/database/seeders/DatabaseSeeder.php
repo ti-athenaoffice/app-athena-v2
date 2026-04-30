@@ -17,11 +17,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            CargoSeeder::class,
+        ]);
+
         Usuario::factory()->create([
             'nome' => 'Test User',
             'email' => 'test@example.com',
             'senha' => Hash::make('senha'),
             'setor' => Setores::TI,
+
         ]);
     }
 }

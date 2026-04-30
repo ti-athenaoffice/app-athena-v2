@@ -10,10 +10,12 @@ import { Checkbox } from "../../../core/components/checkbox";
 import { useCreateUsuario, useUpdateUsuario } from "../hooks/useUsuario";
 import { useEffect } from "react";
 import type { Usuario } from "../../auth/types/Usuario";
+import {useRoles} from "../../auth/hooks/useAuth.ts";
+import Loading from "../../../core/components/loading.tsx";
+import {capitalizeWords} from "../../../core/utils";
 
 interface FuncionarioFormData extends Usuario {
   confirmarSenha?: string;
-  setores_permitidos: string[];
 }
 
 export default function AdminUsuarioForm() {
@@ -21,6 +23,7 @@ export default function AdminUsuarioForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const opcoesSetores = getSetoresOptions();
+  const { data: roles, isLoading: isLoadgingRoles } = useRoles();
   const { mutateAsync: criarUsuario, isPending: isPendingCreate } =
     useCreateUsuario();
   const { mutateAsync: editarUsuario, isPending: isPendingUpdate } =
@@ -41,19 +44,24 @@ export default function AdminUsuarioForm() {
       senha: "",
       confirmarSenha: "",
       setor: undefined,
-      setores_permitidos: [],
+      roles: []
     },
   });
 
   useEffect(() => {
     if (id && location.state?.usuario) {
-      const data = location.state.usuario;
+      const dataRaw = location.state.usuario;
+      // Trata tanto se vier como { usuario: {...} } quanto se vier o objeto direto
+      const data = dataRaw.usuario ? dataRaw.usuario : dataRaw;
+
       reset({
         id: data.id,
         nome: data.nome,
         email: data.email,
         setor: data.setor,
-        setores_permitidos: data.setores_permitidos || "",
+        roles: Array.isArray(data.roles) 
+          ? data.roles.map((r: any) => typeof r === 'string' ? r : r.name) 
+          : [],
       });
     }
   }, [id, reset, location?.state]);
@@ -183,34 +191,42 @@ export default function AdminUsuarioForm() {
           <div className="md:col-span-2 space-y-4 pt-4 border-t border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-                Permissões de Acesso
+                Cargos de Acesso
               </h3>
               <p className="text-xs text-slate-500">
-                Selecione quais setores este usuário poderá visualizar e
-                gerenciar.
+                Selecione quais cargos este usuário terá no sistema.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-4 bg-slate-50 p-6 rounded-xl border border-slate-100">
-              {opcoesSetores.map((opcao) => (
-                <Controller
-                  key={opcao.value}
-                  name="setores_permitidos"
-                  control={control}
-                  render={({ field }) => (
-                    <Checkbox
-                      label={opcao.label}
-                      checked={field.value?.includes(opcao.value)}
-                      onChange={(e) => {
-                        const valorAtual = field.value || [];
-                        const novosValores = e.target.checked
-                          ? [...valorAtual, opcao.value]
-                          : valorAtual.filter((v) => v !== opcao.value);
-                        field.onChange(novosValores);
+
+              {isLoadgingRoles && (
+                  <div className="flex items-center justify-center h-full">
+                    <Loading size={20} message="Carregando cargos..." />
+                  </div>
+              )}
+              {roles?.data?.map((role: { id: number; name: string }) => (
+                  <Controller
+                      key={role.id}
+                      name="roles"
+                      control={control}
+                      render={({ field }) => {
+                        const valorAtual = Array.isArray(field.value) ? field.value : [];
+                        return (
+                          <Checkbox
+                              label={capitalizeWords(role.name)}
+                              checked={valorAtual.includes(role.name)}
+                              onChange={(e) => {
+                                const novosValores = e.target.checked
+                                    ? [...valorAtual, role.name]
+                                    : valorAtual.filter((v) => v !== role.name);
+
+                                field.onChange(novosValores);
+                              }}
+                          />
+                        );
                       }}
-                    />
-                  )}
-                />
+                  />
               ))}
             </div>
           </div>

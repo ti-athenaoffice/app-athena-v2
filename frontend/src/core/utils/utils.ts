@@ -12,6 +12,14 @@ export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
+export function capitalizeWords(text: string): string {
+  return text
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+}
+
 /**
  * Converte uma string para kebab-case
  * @param str - String a ser convertida

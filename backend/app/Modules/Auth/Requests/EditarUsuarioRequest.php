@@ -38,6 +38,7 @@ class EditarUsuarioRequest extends FormRequest
                 Rule::enum(Setores::class),
             ],
             "senha" => "nullable|min:6",
+            "roles" => "sometimes|array",
         ];
     }
 }

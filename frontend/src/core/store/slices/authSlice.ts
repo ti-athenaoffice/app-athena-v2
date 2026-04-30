@@ -29,7 +29,7 @@ export const initializeAuth = createAsyncThunk(
         return {
           token,
           isAuthenticated: true,
-          user: response.data
+          user: response.data.usuario
         };
       } else {
         return { token: null, isAuthenticated: false };

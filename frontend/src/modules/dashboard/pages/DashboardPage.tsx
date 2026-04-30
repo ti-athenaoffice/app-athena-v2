@@ -4,35 +4,20 @@ import {
     ArrowUpRight,
     LayoutGrid,
     UserCog,
-    Megaphone,
     Boxes,
-    Users,
-    Sparkles,
-    ShieldCheck,
     ArrowRight,
     Banknote,
-    Mail,
     MoreHorizontal,
-    PlusCircle,
+    PlusCircle, Speech,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { useAppSelector } from "../../../core/store/hooks";
 import { selectUser } from "../../../core/store/selectors/authSelectors";
+import {hasPermission} from "../../../core/utils/permissions.ts";
 
 export default function DashboardPage() {
     const usuario = useAppSelector(selectUser);
-
-    const roles = useMemo(() => {
-        const r = usuario?.roles;
-        if (!r) return [];
-        return Array.isArray(r) ? r : [r];
-    }, [usuario]);
-
-    const hasRole = (...allowed: string[]) => {
-        if (roles.includes("admin")) return true;
-        return allowed.some((role) => roles.includes(role));
-    };
 
     const quickActions = [
         {
@@ -58,7 +43,7 @@ export default function DashboardPage() {
     const sections = useMemo(() => {
         const allSections = [
             {
-                title: "Aplicações",
+                title: "Meu Perfil",
                 icon: LayoutGrid,
                 description: "Acesso rápido aos principais módulos.",
                 show: true,
@@ -77,7 +62,7 @@ export default function DashboardPage() {
                 title: "Chamados",
                 icon: MoreHorizontal,
                 description: "Solicitações, avisos e acionamentos internos.",
-                show: true,
+                show: hasPermission(usuario, "chamado.listar"),
                 items: [
                     {
                         title: "Central de chamados",
@@ -85,55 +70,39 @@ export default function DashboardPage() {
                         icon: Ticket,
                         href: "/chamados",
                         badge: "Chamados",
-                        show: true,
+                        show: hasPermission(usuario, "chamado.listar"),
                     },
                 ],
             },
             {
-                title: "Financeiro",
+                title: "Fale Conosco",
+                icon: Speech,
+                description: "Solicitações dos clientes pelo site",
+                show: hasPermission(usuario, "fale_conosco.listar"),
+                items: [
+                    {
+                        title: "Fale Conosco",
+                        description: "Gerencie contatos do site.",
+                        icon: Speech,
+                        href: "/fale-conosco",
+                        badge: "Comercial",
+                        show: hasPermission(usuario, "fale_conosco.listar"),
+                    },
+                ],
+            },
+            {
+                title: "Assinaturas",
                 icon: Banknote,
-                description: "Cobranças, faturas e relatórios.",
-                show: hasRole("financeiro"),
+                description: "Gestão de assinaturas e clientes",
+                show: hasPermission(usuario, "assinatura.listar"),
                 items: [
                     {
-                        title: "Envio de Faturas",
-                        description: "Fila, enviados e não enviados.",
-                        icon: Mail,
-                        href: "/faturas",
-                        badge: "Financeiro",
-                        show: hasRole("financeiro"),
-                    },
-                ],
-            },
-            {
-                title: "Marketing",
-                icon: Megaphone,
-                description: "Conteúdo, automações e publicações.",
-                show: hasRole("marketing"),
-                items: [
-                    {
-                        title: "Automação do Blog",
-                        description: "Gerar e organizar posts automaticamente.",
-                        icon: Sparkles,
-                        href: "/post-wordpress",
-                        badge: "Marketing",
-                        show: hasRole("marketing"),
-                    },
-                ],
-            },
-            {
-                title: "Admin",
-                icon: ShieldCheck,
-                description: "Acesso restrito a administradores.",
-                show: hasRole("admin"),
-                items: [
-                    {
-                        title: "Gerenciar usuários",
-                        description: "Criar, editar e remover usuários.",
-                        icon: Users,
-                        href: "/admin",
-                        badge: "Admin",
-                        show: hasRole("admin"),
+                        title: "Lista de assinaturas",
+                        description: "Gerencie contratos e planos.",
+                        icon: Banknote,
+                        href: "/assinaturas",
+                        badge: "Assinaturas",
+                        show: hasPermission(usuario, "assinatura.listar"),
                     },
                 ],
             },
@@ -146,7 +115,7 @@ export default function DashboardPage() {
                 items: section.items.filter((item) => item.show),
             }))
             .filter((section) => section.items.length > 0);
-    }, [roles]);
+    }, [usuario]);
 
     return (
         <div className="space-y-8 pb-10">

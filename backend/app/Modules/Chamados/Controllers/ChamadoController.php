@@ -4,7 +4,6 @@ namespace App\Modules\Chamados\Controllers;
 
 use App\Core\Enums\Setores;
 use App\Core\Enums\StatusChamado;
-use App\Modules\Chamados\Events\ApagarChamadoEvent;
 use App\Modules\Chamados\Events\EditarChamadoEvent;
 use App\Modules\Chamados\Events\NovoChamadoEvent;
 use App\Modules\Chamados\Requests\AlterarStatusRequest;

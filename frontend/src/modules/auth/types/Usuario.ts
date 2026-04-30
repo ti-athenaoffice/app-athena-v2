@@ -6,4 +6,5 @@ export interface Usuario {
   senha?: string;
   created_at?: Date;
   updated_at?: Date;
+  roles?: string[];
 }

@@ -11,6 +11,7 @@ class UsuarioService
     public function listarUsuarios(array $filtros, int $perPage = 20): LengthAwarePaginator
     {
         return Usuario::query()
+            ->with('roles')
             ->when($filtros['nome'] ?? null, function ($query, $filtrosetor) {
                 $query->where('nome', 'ilike', "%{$filtrosetor}%");
             })
@@ -28,17 +29,29 @@ class UsuarioService
 
     public function criarUsuario(array $dados): Usuario
     {
-        return Usuario::create([
+        $roles = $dados['roles'] ?? [];
+        unset($dados['roles']);
+
+        $usuario = Usuario::create([
             'nome' => $dados['nome'],
             'email' => $dados['email'],
             'senha' => Hash::make($dados['senha']),
             'setor' => $dados['setor'],
         ]);
+
+        $usuario->syncRoles($roles);
+        return $usuario->refresh();
     }
 
     public function editarUsuario(int $id, array $dados): Usuario
     {
         $usuario = $this->obterUsuarioPorId($id);
+
+        $roles = $dados['roles'] ?? [];
+        unset($dados['roles']);
+
+        unset($dados['setores_permitidos']);
+
         if (empty($dados['senha'])) {
             unset($dados['senha']);
         } else {
@@ -46,7 +59,8 @@ class UsuarioService
         }
 
         $usuario->update($dados);
-        return $usuario;
+        $usuario->syncRoles($roles);
+        return $usuario->refresh();
     }
 
     public function apagarUsuario(int $id): void

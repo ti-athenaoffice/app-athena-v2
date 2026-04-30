@@ -12,3 +12,7 @@ export async function processarLogin(login: Login) {
 export async function processarLogout() {
   await api.post("/logout");
 }
+
+export async function listarRoles() {
+  return await api.get("/roles");
+}

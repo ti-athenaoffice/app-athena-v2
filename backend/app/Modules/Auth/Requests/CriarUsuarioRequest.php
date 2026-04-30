@@ -37,6 +37,7 @@ class CriarUsuarioRequest extends FormRequest
                 Rule::enum(Setores::class),
             ],
             'senha' => 'required|string|min:6',
+            'roles' => 'sometimes|array',
         ];
     }
 }

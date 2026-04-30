@@ -9,6 +9,7 @@ import PerfilPage from "./modules/auth/pages/PerfilPage";
 import AdminPage from "./modules/admin/pages/AdminPage";
 import AdminUsuarioForm from "./modules/admin/pages/AdminUsuarioForm";
 import FaleConoscoPage from "./modules/faleConosco/pages/FaleConoscoPage.tsx";
+import AssinaturaPage from "./modules/assinatura/pages/AssinaturaPage.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +62,11 @@ export const router = createBrowserRouter([
       {
         path: "fale-conosco",
         element: <FaleConoscoPage />
+      },
+
+      {
+        path: "assinaturas",
+        element: <AssinaturaPage />
       },
 
       {

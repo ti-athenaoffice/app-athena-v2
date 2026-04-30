@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'conexa' => [
+        'url' => env('CONEXA_URL'),
+        'token' => env('CONEXA_API_KEY'),
+    ]
 
 ];

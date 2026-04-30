@@ -10,19 +10,37 @@ Route::prefix("/chamados")
 ->middleware('auth:sanctum')
 ->name("chamados.")
 ->group(function () {
-    Route::get("/", [ChamadoController::class, "listarChamados"])->name("listarChamados");
-    Route::get("/{id}", [ChamadoController::class, "listarChamadoPorId"])->name("listarChamadoPorId");
-    Route::post("/", [ChamadoController::class, "criarChamado"])->name("criarChamado");
-    Route::put("/{id}", [ChamadoController::class, "editarChamado"])->name("editarChamado");
-    Route::put("/{id}/status", [ChamadoController::class, "alterarStatus"])->name("alterarStatus");
-    Route::put("/{id}/adicionar-prazo", [ChamadoController::class, "adicionarPrazoNoChamado"])->name("adicionarPrazoNoChamado");
-    Route::delete("/{id}", [ChamadoController::class, "apagarChamado"])->name("apagarChamado");
+    Route::get("/", [ChamadoController::class, "listarChamados"])
+        ->name("listarChamados")
+        ->middleware("permission:chamado.listar");
+    Route::get("/{id}", [ChamadoController::class, "listarChamadoPorId"])
+        ->name("listarChamadoPorId")
+        ->middleware("permission:chamado.listar");
+    Route::post("/", [ChamadoController::class, "criarChamado"])
+        ->name("criarChamado")
+    ->middleware("permission:chamado.criar");
+    Route::put("/{id}", [ChamadoController::class, "editarChamado"])
+        ->name("editarChamado")
+        ->middleware("permission:chamado.editar");
+    Route::put("/{id}/status", [ChamadoController::class, "alterarStatus"])
+        ->name("alterarStatus")
+        ->middleware("permission:chamado.editar");;
+    Route::put("/{id}/adicionar-prazo", [ChamadoController::class, "adicionarPrazoNoChamado"])
+        ->name("adicionarPrazoNoChamado")
+        ->middleware("permission:chamado.editar");;
+    Route::delete("/{id}", [ChamadoController::class, "apagarChamado"])
+        ->name("apagarChamado")
+        ->middleware("permission:chamado.deletar");
 });
 
 Route::prefix("/chamados")
 ->middleware('auth:sanctum')
 ->name("chamado.mensagens.")
 ->group(function () {
-    Route::get("/{id}/mensagens", [MensagemChamadoController::class, "listarMensagensPorChamadoId"])->name("listarMensagensPorChamadoId");
-    Route::post("/mensagem", [MensagemChamadoController::class, "criarMensagem"])->name("criarMensagem");
+    Route::get("/{id}/mensagens", [MensagemChamadoController::class, "listarMensagensPorChamadoId"])
+        ->name("listarMensagensPorChamadoId")
+        ->middleware("permission:mensagem-chamado.listar");
+    Route::post("/mensagem", [MensagemChamadoController::class, "criarMensagem"])
+        ->name("criarMensagem")
+        ->middleware("permission:mensagem-chamado.criar");
 });
