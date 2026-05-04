@@ -16,3 +16,5 @@ Route::prefix("/assinaturas")
     Route::post("/", [AssinaturaController::class, "regitrarAssinatura"])
         ->name("regitrarAssinatura");
 });
+
+Route::post("/webhook-assinatura", [AssinaturaController::class, "regitrarAssinatura"])->name("webhook-assinatura");

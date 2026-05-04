@@ -21,12 +21,12 @@ class DatabaseSeeder extends Seeder
             CargoSeeder::class,
         ]);
 
-        Usuario::factory()->create([
+        $user = Usuario::factory()->create([
             'nome' => 'Test User',
             'email' => 'test@example.com',
             'senha' => Hash::make('senha'),
             'setor' => Setores::TI,
-
         ]);
+        $user->assignRole('admin');
     }
 }

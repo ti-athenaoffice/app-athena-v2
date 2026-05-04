@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('webhook_assinatura_conexas', function (Blueprint $table) {
             $table->id();
+            $table->json('payload');
             $table->timestamps();
         });
     }
