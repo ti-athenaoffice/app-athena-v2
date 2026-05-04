@@ -28,8 +28,8 @@ class UsuarioFactory extends Factory
     public function definition(): array
     {
         return [
-            'nome' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'nome' => $this->fake()->name(),
+            'email' => $this->fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'setor' => Setores::TI,
             'senha' => static::$senha ??= Hash::make('senha'),
