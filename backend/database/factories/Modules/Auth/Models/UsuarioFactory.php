@@ -9,27 +9,19 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends Factory<User>
+ * @extends Factory<Usuario>
  */
 class UsuarioFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $senha;
 
     protected $model = Usuario::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'nome' => $this->fake()->name(),
-            'email' => $this->fake()->unique()->safeEmail(),
+            'nome' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'setor' => Setores::TI,
             'senha' => static::$senha ??= Hash::make('senha'),
@@ -37,9 +29,6 @@ class UsuarioFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [
